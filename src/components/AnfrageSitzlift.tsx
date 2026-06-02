@@ -664,6 +664,12 @@ const Gespraechsguidance: React.FC<{
       .replace(/[ \t]+/g, ' ')
       .trim();
 
+  /** Weiterleiten-Modal: welche Abschluss-Demo-Variante (0…n-1) im Flächen-Titel/Sprechblase gilt */
+  const [weiterleitenAbschlussVariantIdx, setWeiterleitenAbschlussVariantIdx] = useState(0);
+  useEffect(() => {
+    if (!isWeiterleitenMode) setWeiterleitenAbschlussVariantIdx(0);
+  }, [isWeiterleitenMode]);
+
   const [openGroupIndex, setOpenGroupIndex] = useState<number | null>(() => {
     if (isWeiterleitenMode) {
       return weiterleitenModeGroups.length > 0 ? 0 : null;
@@ -714,12 +720,16 @@ const Gespraechsguidance: React.FC<{
       <div className="guidance-content">
         <div className="guidance-tips">
           {visibleGroups.map((group, groupIndex) => {
+            const isAbschlussWeiterleitenFlat =
+              isWeiterleitenMode && group.title === 'Abschluss';
             const isFlatGuidanceSection =
               group.title === 'Bedarfsermittlung' ||
               group.title === 'Zusammenfassung' ||
-              (isWeiterleitenMode && group.title === 'Verabschiedung');
+              (isWeiterleitenMode && group.title === 'Verabschiedung') ||
+              isAbschlussWeiterleitenFlat;
             const shouldUseTitleTooltipFromItems =
               isWeiterleitenMode && group.title === 'Verabschiedung';
+            const vAbs = ABSCHLUSS_WEITERLEITEN_VARIANTS[weiterleitenAbschlussVariantIdx];
             const flatSectionTooltipMarkdown =
               group.entries && group.entries.length > 0
                 ? group.entries
@@ -731,7 +741,9 @@ const Gespraechsguidance: React.FC<{
                   ? group.items
                       .map((item) => replaceKlientPlaceholders(item))
                       .join('\n\n')
-                  : null;
+                  : isAbschlussWeiterleitenFlat && vAbs
+                    ? replaceKlientPlaceholders(`${vAbs.heading}\n\n${vAbs.body}`)
+                    : null;
 
             const entriesBlock =
               group.entries && group.entries.length > 0 && !isFlatGuidanceSection ? (
@@ -788,7 +800,8 @@ const Gespraechsguidance: React.FC<{
                     )}
                     {group.items &&
                       group.items.length > 0 &&
-                      !shouldUseTitleTooltipFromItems && (
+                      !shouldUseTitleTooltipFromItems &&
+                      !isAbschlussWeiterleitenFlat && (
                       <div className="guidance-group-items guidance-collapsible-content">
                         {group.items.map((item, itemIndex) => (
                           <GuidanceSideBubble
@@ -803,6 +816,32 @@ const Gespraechsguidance: React.FC<{
                             </div>
                           </GuidanceSideBubble>
                         ))}
+                      </div>
+                    )}
+                    {isAbschlussWeiterleitenFlat && (
+                      <div
+                        className="guidance-abschluss-demo guidance-abschluss-demo--minimal guidance-abschluss-demo--flat"
+                        role="group"
+                        aria-label="Abschluss: Demo-Textvariante wählen, Volltext in der Sprechblase über der Überschrift"
+                      >
+                        <div
+                          className="guidance-abschluss-variant-strip"
+                          role="list"
+                          aria-label="Textvariante für die Anzeige wählen"
+                        >
+                          {ABSCHLUSS_WEITERLEITEN_VARIANTS.map((variant, i) => (
+                            <button
+                              key={variant.heading}
+                              type="button"
+                              className={i === weiterleitenAbschlussVariantIdx ? 'is-active' : ''}
+                              aria-pressed={i === weiterleitenAbschlussVariantIdx}
+                              aria-label={`Textvariante ${i + 1}: ${variant.heading}`}
+                              onClick={() => setWeiterleitenAbschlussVariantIdx(i)}
+                            >
+                              {i + 1}
+                            </button>
+                          ))}
+                        </div>
                       </div>
                     )}
                     {entriesBlock}
@@ -822,54 +861,21 @@ const Gespraechsguidance: React.FC<{
                       {group.title}
                     </summary>
                     {group.items && group.items.length > 0 && (
-                      isWeiterleitenMode && group.title === 'Abschluss' ? (
-                        <div className="guidance-collapsible-content">
-                          <div
-                            className="guidance-abschluss-demo guidance-abschluss-demo--minimal"
-                            role="group"
-                            aria-label="Abschluss: Textvarianten, Volltext in Sprechblase"
+                      <div className="guidance-group-items guidance-collapsible-content">
+                        {group.items.map((item, itemIndex) => (
+                          <GuidanceSideBubble
+                            key={itemIndex}
+                            className="guidance-bubble-anchor"
+                            markdownText={replaceKlientPlaceholders(item)}
                           >
-                            <div
-                              className="guidance-abschluss-variant-strip"
-                              role="list"
-                              aria-label="Textvariante wählen, Volltext erscheint in der Sprechblase"
-                            >
-                              {ABSCHLUSS_WEITERLEITEN_VARIANTS.map((v, i) => (
-                                <GuidanceSideBubble
-                                  key={i}
-                                  className="guidance-bubble-anchor guidance-bubble-anchor--abschluss"
-                                  markdownText={replaceKlientPlaceholders(
-                                    `${v.heading} (Textvariante ${i + 1})\n\n${v.body}`
-                                  )}
-                                >
-                                  <button
-                                    type="button"
-                                    aria-label={`Textvariante ${i + 1}: ${v.heading}`}
-                                  >
-                                    {i + 1}
-                                  </button>
-                                </GuidanceSideBubble>
-                              ))}
+                            <div className="guidance-group-item guidance-group-item--tooltip-only">
+                              <span className="guidance-item-faux-label">
+                                Textvorschlag {itemIndex + 1}
+                              </span>
                             </div>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="guidance-group-items guidance-collapsible-content">
-                          {group.items.map((item, itemIndex) => (
-                            <GuidanceSideBubble
-                              key={itemIndex}
-                              className="guidance-bubble-anchor"
-                              markdownText={replaceKlientPlaceholders(item)}
-                            >
-                              <div className="guidance-group-item guidance-group-item--tooltip-only">
-                                <span className="guidance-item-faux-label">
-                                  Textvorschlag {itemIndex + 1}
-                                </span>
-                              </div>
-                            </GuidanceSideBubble>
-                          ))}
-                        </div>
-                      )
+                          </GuidanceSideBubble>
+                        ))}
+                      </div>
                     )}
                     {entriesBlock}
                   </details>
@@ -893,35 +899,6 @@ const ANRUF_LANDING_WOCHENTAGE: { id: string; label: string }[] = [
   { id: 'sa', label: 'Sa' },
   { id: 'so', label: 'So' },
 ];
-
-/** translateY der Speichern-Leiste: 0 = unten rechts; negativ = nach oben (begrenzt). */
-const FLOATING_SAVE_BOX_VERTICAL_LS_KEY = 'anfrageSitzlift.floatingSaveBoxVertical.v1';
-const FLOATING_SAVE_BOX_LEGACY_OFFSET_LS_KEY = 'anfrageSitzlift.floatingSaveBoxOffset.v1';
-/** Max. Verschiebung nach oben (px); größer = Leiste kann höher am Bildschirm sitzen */
-const FLOATING_SAVE_BOX_MAX_UP_PX = 520;
-
-function clampFloatingSaveTranslateY(y: number): number {
-  if (!Number.isFinite(y)) return 0;
-  return Math.min(0, Math.max(-FLOATING_SAVE_BOX_MAX_UP_PX, y));
-}
-
-function readFloatingSaveBoxTranslateY(): number {
-  try {
-    const raw = window.localStorage.getItem(FLOATING_SAVE_BOX_VERTICAL_LS_KEY);
-    if (raw) {
-      const p = JSON.parse(raw) as { translateY?: unknown };
-      if (typeof p.translateY === 'number') return clampFloatingSaveTranslateY(p.translateY);
-    }
-    const legacy = window.localStorage.getItem(FLOATING_SAVE_BOX_LEGACY_OFFSET_LS_KEY);
-    if (legacy) {
-      const p = JSON.parse(legacy) as { y?: unknown };
-      if (typeof p.y === 'number') return clampFloatingSaveTranslateY(p.y);
-    }
-  } catch {
-    /* ignorieren */
-  }
-  return 0;
-}
 
 const AnfrageSitzlift: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -993,15 +970,6 @@ const AnfrageSitzlift: React.FC = () => {
   const [isAktionenDropdownOpen, setIsAktionenDropdownOpen] = useState(false);
   /** Oberfläche: Dashboard vs. Anfrage-Detail (Klienten) */
   const [crmMainView, setCrmMainView] = useState<'dashboard' | 'anfrage'>('anfrage');
-  /** Nur vertikal: Leiste etwas nach oben schieben (max. FLOATING_SAVE_BOX_MAX_UP_PX), sonst fix unten rechts */
-  const [floatingSaveBoxTranslateY, setFloatingSaveBoxTranslateY] = useState(readFloatingSaveBoxTranslateY);
-  const floatingSaveDragRef = useRef<{
-    pointerId: number;
-    startClientY: number;
-    startTranslateY: number;
-  } | null>(null);
-  const floatingSaveBoxTranslateYRef = useRef(floatingSaveBoxTranslateY);
-  floatingSaveBoxTranslateYRef.current = floatingSaveBoxTranslateY;
   const aktionenDropdownRef = useRef<HTMLDivElement>(null);
   const appToastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [appToast, setAppToast] = useState<{
@@ -1130,57 +1098,6 @@ const AnfrageSitzlift: React.FC = () => {
     return () => {
       if (appToastTimerRef.current) clearTimeout(appToastTimerRef.current);
     };
-  }, []);
-
-  useEffect(() => {
-    try {
-      window.localStorage.setItem(
-        FLOATING_SAVE_BOX_VERTICAL_LS_KEY,
-        JSON.stringify({ translateY: floatingSaveBoxTranslateY })
-      );
-    } catch {
-      /* ignorieren */
-    }
-  }, [floatingSaveBoxTranslateY]);
-
-  const onFloatingSaveDragHandlePointerDown = useCallback(
-    (e: React.PointerEvent<HTMLDivElement>) => {
-      e.preventDefault();
-      e.stopPropagation();
-      e.currentTarget.setPointerCapture(e.pointerId);
-      floatingSaveDragRef.current = {
-        pointerId: e.pointerId,
-        startClientY: e.clientY,
-        startTranslateY: floatingSaveBoxTranslateYRef.current
-      };
-    },
-    []
-  );
-
-  const onFloatingSaveDragHandlePointerMove = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
-    const d = floatingSaveDragRef.current;
-    if (!d || e.pointerId !== d.pointerId) return;
-    const next = clampFloatingSaveTranslateY(
-      d.startTranslateY + (e.clientY - d.startClientY)
-    );
-    setFloatingSaveBoxTranslateY(next);
-  }, []);
-
-  const onFloatingSaveDragHandlePointerEnd = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
-    const d = floatingSaveDragRef.current;
-    if (!d || e.pointerId !== d.pointerId) return;
-    floatingSaveDragRef.current = null;
-    try {
-      e.currentTarget.releasePointerCapture(e.pointerId);
-    } catch {
-      /* Capture ggf. schon entfernt */
-    }
-  }, []);
-
-  const onFloatingSaveDragHandleDoubleClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setFloatingSaveBoxTranslateY(0);
   }, []);
 
   const showAppToast = (variant: 'copy' | 'email', message?: string, options?: { instant?: boolean }) => {
@@ -1770,13 +1687,18 @@ const AnfrageSitzlift: React.FC = () => {
               )}
 
               <div className="main-content">
-          {/* Header */}
+          {/* Header (sticky bis zur Trennlinie über „Pflegehilfe+ gebucht“) */}
+          <div className="main-content-sticky-top">
           <div className="content-header">
             <h1>Anfrage zu Sitzlift in Erstellt: 19. Januar 2026 13:54</h1>
+            <div className="header-actions-stack">
             <div className="header-actions">
-              <button className="btn-yellow">
+              <button type="button" className="btn-yellow">
                 <span className="icon star-icon">★</span>
                 <span>Bewertung</span>
+              </button>
+              <button type="button" className="btn-grey">
+                Speichern
               </button>
               <div className="aktionen-dropdown-wrap" ref={aktionenDropdownRef}>
                 <button
@@ -1868,10 +1790,6 @@ const AnfrageSitzlift: React.FC = () => {
                   </div>
                 )}
               </div>
-              <button className="btn-green">
-                <span className="icon">+</span>
-                <span>Senior hinzufügen</span>
-              </button>
               <button
                 type="button"
                 className="btn-orange"
@@ -1879,11 +1797,25 @@ const AnfrageSitzlift: React.FC = () => {
               >
                 Schließen
               </button>
-              <button className="btn-blue">
+              <button type="button" className="btn-blue">
                 <span>Freigeben</span>
                 <span className="icon">→</span>
               </button>
             </div>
+            <div
+              className="header-actions header-actions--save"
+              onMouseEnter={() => setFormData((prev) => ({ ...prev, activeGuidanceSection: 'abschluss' }))}
+            >
+              <button
+                type="button"
+                className="btn-green"
+                onClick={() => setIsWeiterleitenModalOpen(true)}
+              >
+                Speichern und weiter
+              </button>
+            </div>
+            </div>
+          </div>
           </div>
 
           <div className="main-content-promo-toolbar">
@@ -2032,7 +1964,13 @@ const AnfrageSitzlift: React.FC = () => {
           >
             <div className="section-header green">
               <h2>Senior</h2>
-              <button className="btn-grey">Todesfall hinterlegen</button>
+              <div className="section-actions">
+                <button type="button" className="btn-grey">Todesfall hinterlegen</button>
+                <button type="button" className="btn-green">
+                  <span className="icon">+</span>
+                  <span>Senior hinzufügen</span>
+                </button>
+              </div>
             </div>
             <div className="form-grid">
               <div className="form-row four-columns">
@@ -2777,37 +2715,6 @@ const AnfrageSitzlift: React.FC = () => {
     </div>
   )}
 </div>
-
-      {crmMainView === 'anfrage' && (
-        <div
-          className="floating-save-box"
-          style={{
-            transform: `translate(0, ${floatingSaveBoxTranslateY}px)`
-          }}
-          onMouseEnter={() => setFormData((prev) => ({ ...prev, activeGuidanceSection: 'abschluss' }))}
-        >
-          <div
-            className="floating-save-box__drag-handle"
-            aria-label="Speichern-Leiste nach oben verschieben"
-            title={`Nach oben ziehen (bis ca. ${FLOATING_SAVE_BOX_MAX_UP_PX} Pixel) · Doppelklick: Standardposition`}
-            onPointerDown={onFloatingSaveDragHandlePointerDown}
-            onPointerMove={onFloatingSaveDragHandlePointerMove}
-            onPointerUp={onFloatingSaveDragHandlePointerEnd}
-            onPointerCancel={onFloatingSaveDragHandlePointerEnd}
-            onDoubleClick={onFloatingSaveDragHandleDoubleClick}
-          />
-          <button type="button" className="btn-grey">
-            Speichern
-          </button>
-          <button
-            type="button"
-            className="btn-green"
-            onClick={() => setIsWeiterleitenModalOpen(true)}
-          >
-            Speichern und weiter
-          </button>
-        </div>
-      )}
 
       {/* Klienten löschen Modal */}
       {isKlientLoeschenModalOpen && (
