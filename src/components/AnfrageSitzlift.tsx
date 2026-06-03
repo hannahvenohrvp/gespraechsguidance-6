@@ -968,6 +968,9 @@ const AnfrageSitzlift: React.FC = () => {
     telefonnummer: '',
   });
   const [isAktionenDropdownOpen, setIsAktionenDropdownOpen] = useState(false);
+  /** Header: V1 = mit Bewertung, V2 = ohne Bewertung (kompakt), V3 = ohne Bewertung (Platzhalter) */
+  const [headerUiVersion, setHeaderUiVersion] = useState<1 | 2 | 3>(1);
+  const bewertungAusgeblendet = headerUiVersion !== 1;
   /** Oberfläche: Dashboard vs. Anfrage-Detail (Klienten) */
   const [crmMainView, setCrmMainView] = useState<'dashboard' | 'anfrage'>('anfrage');
   const aktionenDropdownRef = useRef<HTMLDivElement>(null);
@@ -1418,6 +1421,38 @@ const AnfrageSitzlift: React.FC = () => {
           </div>
         </div>
         <div className="nav-right">
+          <div
+            className="header-version-toggle header-version-toggle--top-nav"
+            title="Header-Version (Demo): V2 ohne Bewertung, V3 mit Platzhalter"
+          >
+            <span className="header-version-toggle__label">UI</span>
+            <div className="header-version-toggle__buttons" role="group" aria-label="Header-Version">
+              <button
+                type="button"
+                className={headerUiVersion === 1 ? 'is-active' : ''}
+                aria-pressed={headerUiVersion === 1}
+                onClick={() => setHeaderUiVersion(1)}
+              >
+                V1
+              </button>
+              <button
+                type="button"
+                className={headerUiVersion === 2 ? 'is-active' : ''}
+                aria-pressed={headerUiVersion === 2}
+                onClick={() => setHeaderUiVersion(2)}
+              >
+                V2
+              </button>
+              <button
+                type="button"
+                className={headerUiVersion === 3 ? 'is-active' : ''}
+                aria-pressed={headerUiVersion === 3}
+                onClick={() => setHeaderUiVersion(3)}
+              >
+                V3
+              </button>
+            </div>
+          </div>
           <div className="user-menu">
             <span>Hallo Hannah Venohr</span>
             <span className="dropdown-arrow">▼</span>
@@ -1691,12 +1726,11 @@ const AnfrageSitzlift: React.FC = () => {
           <div className="main-content-sticky-top">
           <div className="content-header">
             <h1>Anfrage zu Sitzlift in Erstellt: 19. Januar 2026 13:54</h1>
-            <div className="header-actions-stack">
-            <div className="header-actions">
-              <button type="button" className="btn-yellow">
-                <span className="icon star-icon">★</span>
-                <span>Bewertung</span>
-              </button>
+            <div
+              className="header-actions"
+              onMouseEnter={() => setFormData((prev) => ({ ...prev, activeGuidanceSection: 'abschluss' }))}
+            >
+              <div className="header-actions-group">
               <button type="button" className="btn-grey">
                 Speichern
               </button>
@@ -1790,6 +1824,8 @@ const AnfrageSitzlift: React.FC = () => {
                   </div>
                 )}
               </div>
+              </div>
+              <div className="header-actions-group">
               <button
                 type="button"
                 className="btn-orange"
@@ -1798,22 +1834,39 @@ const AnfrageSitzlift: React.FC = () => {
                 Schließen
               </button>
               <button type="button" className="btn-blue">
-                <span>Freigeben</span>
-                <span className="icon">→</span>
+                Freigeben
               </button>
-            </div>
-            <div
-              className="header-actions header-actions--save"
-              onMouseEnter={() => setFormData((prev) => ({ ...prev, activeGuidanceSection: 'abschluss' }))}
-            >
+              </div>
+              <div className="header-actions-divider" role="presentation" aria-hidden="true" />
+              <div
+                className={`header-actions-group${
+                  headerUiVersion === 2
+                    ? ' header-actions-group--bewertung-collapsed'
+                    : headerUiVersion === 3
+                      ? ' header-actions-group--bewertung-placeholder'
+                      : ''
+                }`}
+              >
               <button
                 type="button"
-                className="btn-green"
+                className={`btn-yellow header-btn-bewertung header-btn-emphasis${bewertungAusgeblendet ? ' header-btn-bewertung--hidden' : ''}`}
+                aria-hidden={bewertungAusgeblendet}
+                tabIndex={bewertungAusgeblendet ? -1 : undefined}
+              >
+                <span className="icon star-icon">★</span>
+                <span>Bewertung</span>
+              </button>
+              <button
+                type="button"
+                className="btn-green btn-header-cta header-btn-emphasis"
                 onClick={() => setIsWeiterleitenModalOpen(true)}
               >
-                Speichern und weiter
+                <span className="icon" aria-hidden="true">
+                  ✓
+                </span>
+                <span>Speichern und weiter</span>
               </button>
-            </div>
+              </div>
             </div>
           </div>
           </div>

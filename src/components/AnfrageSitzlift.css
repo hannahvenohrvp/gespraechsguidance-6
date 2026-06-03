@@ -1043,6 +1043,86 @@
   letter-spacing: -0.3px;
 }
 
+.header-version-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  user-select: none;
+}
+
+.header-version-toggle__label {
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.header-version-toggle__buttons {
+  display: inline-flex;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.header-version-toggle__buttons button {
+  padding: 2px 8px;
+  border: none;
+  background: transparent;
+  font-size: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  line-height: 1.4;
+}
+
+.header-version-toggle__buttons button + button {
+  border-left-width: 1px;
+  border-left-style: solid;
+}
+
+.header-version-toggle__buttons button:focus-visible {
+  outline: 2px solid #90caf9;
+  outline-offset: 1px;
+  z-index: 1;
+}
+
+/* Dezent in der schwarzen Top-Nav */
+.header-version-toggle--top-nav {
+  opacity: 0.42;
+  color: rgba(255, 255, 255, 0.75);
+  transition: opacity 0.15s ease;
+}
+
+.header-version-toggle--top-nav:hover,
+.header-version-toggle--top-nav:focus-within {
+  opacity: 1;
+}
+
+.header-version-toggle--top-nav .header-version-toggle__buttons {
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.header-version-toggle--top-nav .header-version-toggle__buttons button {
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.header-version-toggle--top-nav .header-version-toggle__buttons button + button {
+  border-left-color: rgba(255, 255, 255, 0.18);
+}
+
+.header-version-toggle--top-nav .header-version-toggle__buttons button.is-active {
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+}
+
+.header-version-toggle--top-nav .header-version-toggle__buttons button:not(.is-active):hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.header-btn-bewertung--hidden {
+  pointer-events: none;
+}
+
 /* Eine Zeile: 👑 Pflegehilfe+ gebucht | Verantwortlicher … + 🔄 */
 .main-content-promo-toolbar {
   display: flex;
@@ -1116,13 +1196,119 @@
   flex-shrink: 0;
 }
 
-.header-actions-stack {
+.content-header .header-actions {
+  --header-btn-border: #8a8a8a;
+  --header-btn-border-hover: #5a5a5a;
+  --header-btn-radius: 4px;
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 6px;
+  gap: 8px;
+  flex-wrap: nowrap;
   flex-shrink: 0;
+  align-items: center;
+  overflow: visible;
 }
+
+.content-header .header-actions-divider {
+  width: 1px;
+  align-self: center;
+  height: 24px;
+  flex-shrink: 0;
+  background: var(--header-btn-border);
+  margin: 0 1px;
+}
+
+.content-header .header-actions-group {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  gap: 0;
+}
+
+/* Aneinander + überall leicht abgerundet, klarer Rand */
+.content-header .header-actions-group > button,
+.content-header .header-actions-group .aktionen-dropdown-wrap .btn-dropdown {
+  border: 1px solid var(--header-btn-border) !important;
+  border-radius: var(--header-btn-radius) !important;
+  margin-left: -1px;
+  position: relative;
+  z-index: 1;
+  box-shadow: none;
+  transition:
+    border-color 0.15s ease,
+    opacity 0.15s ease,
+    z-index 0s;
+}
+
+.content-header .header-actions-group > button:first-child,
+.content-header .header-actions-group > .aktionen-dropdown-wrap:first-child {
+  margin-left: 0;
+}
+
+.content-header .header-actions-group .aktionen-dropdown-wrap {
+  margin-left: -1px;
+  display: flex;
+  align-self: stretch;
+}
+
+.content-header .header-actions-group > .aktionen-dropdown-wrap:first-child {
+  margin-left: 0;
+}
+
+.content-header .header-actions-group .aktionen-dropdown-wrap .btn-dropdown {
+  margin-left: 0;
+  align-self: stretch;
+}
+
+.content-header .header-actions-group > button:hover,
+.content-header .header-actions-group .aktionen-dropdown-wrap .btn-dropdown:hover {
+  opacity: 1;
+  z-index: 2;
+  border-color: var(--header-btn-border-hover) !important;
+}
+
+/* Bewertung + Speichern und weiter: etwas größer als die übrigen Header-Buttons */
+.content-header .header-actions-group > .header-btn-emphasis {
+  padding: 10px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  min-height: 40px;
+  gap: 8px;
+}
+
+/* Haupt-CTA: Speichern und weiter */
+.content-header .header-actions-group > .btn-header-cta {
+  padding: 10px 22px;
+  background-color: #43a047;
+  border: 1px solid #2e7d32 !important;
+  box-shadow: none;
+}
+
+.content-header .header-actions-group > .btn-header-cta:hover {
+  opacity: 1;
+  border-color: #1b5e20 !important;
+  z-index: 3;
+}
+
+/* V2: Bewertung weg – nur „Speichern und weiter“, kein sichtbarer Platzhalter */
+.content-header .header-actions-group--bewertung-collapsed {
+  box-shadow: none;
+}
+
+.content-header .header-actions-group--bewertung-collapsed > .header-btn-bewertung--hidden {
+  display: none;
+}
+
+.content-header .header-actions-group--bewertung-collapsed > .btn-header-cta {
+  margin-left: 0;
+}
+
+/* V3: Bewertung unsichtbar, Freiraum bleibt (alte V2-Variante) */
+.content-header .header-actions-group--bewertung-placeholder > .header-btn-bewertung--hidden {
+  visibility: hidden;
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
+
 
 .header-actions {
   display: flex;
@@ -1130,103 +1316,6 @@
   flex-wrap: nowrap;
   border-radius: 5px;
   overflow: visible;
-}
-
-/* Header-Ecke: angrenzende Button-Gruppe mit dünnem Rahmen */
-.header-actions-stack .header-actions:not(.header-actions--save) {
-  gap: 0;
-  border-radius: 6px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
-}
-
-.header-actions-stack .header-actions:not(.header-actions--save) > button,
-.header-actions-stack .header-actions:not(.header-actions--save) .aktionen-dropdown-wrap .btn-dropdown {
-  border: 1px solid rgba(0, 0, 0, 0.14);
-  border-radius: 0 !important;
-  margin-left: -1px;
-  position: relative;
-  z-index: 1;
-  box-shadow: none;
-  transition:
-    border-color 0.15s ease,
-    filter 0.15s ease,
-    opacity 0.15s ease,
-    z-index 0s;
-}
-
-.header-actions-stack .header-actions:not(.header-actions--save) > button:first-child {
-  margin-left: 0;
-  border-top-left-radius: 6px !important;
-  border-bottom-left-radius: 6px !important;
-}
-
-.header-actions-stack .header-actions:not(.header-actions--save) > button:last-child {
-  border-top-right-radius: 6px !important;
-  border-bottom-right-radius: 6px !important;
-}
-
-.header-actions-stack .header-actions:not(.header-actions--save) .aktionen-dropdown-wrap {
-  margin-left: -1px;
-  display: flex;
-  align-self: stretch;
-}
-
-.header-actions-stack .header-actions:not(.header-actions--save) .aktionen-dropdown-wrap .btn-dropdown {
-  margin-left: 0;
-  align-self: stretch;
-}
-
-.header-actions-stack .header-actions:not(.header-actions--save) > button:hover,
-.header-actions-stack .header-actions:not(.header-actions--save) .aktionen-dropdown-wrap .btn-dropdown:hover {
-  opacity: 1;
-  z-index: 2;
-  filter: brightness(1.04);
-}
-
-.header-actions-stack .btn-yellow {
-  border-color: #d4b800;
-}
-
-.header-actions-stack .btn-dropdown {
-  border-color: #c5c5c5;
-}
-
-.header-actions-stack .btn-orange {
-  border-color: #e65100;
-}
-
-.header-actions-stack .btn-blue {
-  border-color: #0d47a1;
-}
-
-.header-actions-stack .btn-grey {
-  border-color: #616161;
-}
-
-.header-actions-stack .btn-green {
-  border-color: #2e7d32;
-}
-
-/* Haupt-CTA: Speichern und weiter */
-.header-actions--save {
-  padding-top: 2px;
-}
-
-.header-actions--save .btn-green {
-  padding: 11px 22px;
-  font-size: 14px;
-  font-weight: 600;
-  min-height: 44px;
-  border-radius: 6px !important;
-  background-color: #43a047;
-  border: 1px solid #2e7d32;
-  box-shadow: 0 2px 6px rgba(46, 125, 50, 0.28);
-}
-
-.header-actions--save .btn-green:hover {
-  opacity: 1;
-  filter: brightness(1.06);
-  box-shadow: 0 2px 8px rgba(46, 125, 50, 0.38);
 }
 
 .btn-red, .btn-green, .btn-blue, .btn-grey, .btn-dropdown, .btn-yellow, .btn-orange {
@@ -1283,11 +1372,6 @@
   color: #333;
   border-left: 1px solid #e0e0e0;
   border-right: 1px solid #e0e0e0;
-}
-
-.header-actions-stack .header-actions:not(.header-actions--save) .btn-dropdown {
-  border-left-color: #c5c5c5;
-  border-right-color: #c5c5c5;
 }
 
 .header-actions .icon {
@@ -2821,13 +2905,27 @@
     grid-template-columns: 1fr;
   }
   
-  .header-actions-stack {
+  .content-header .header-actions {
+    flex-direction: column;
+    gap: 6px;
+    width: 100%;
     align-items: stretch;
+  }
+
+  .content-header .header-actions-group {
+    flex-direction: column;
     width: 100%;
   }
 
-  .header-actions {
-    flex-direction: column;
+  .content-header .header-actions-group > button,
+  .content-header .header-actions-group .aktionen-dropdown-wrap {
+    margin-left: 0;
+    margin-top: -1px;
+  }
+
+  .content-header .header-actions-group > button:first-child,
+  .content-header .header-actions-group .aktionen-dropdown-wrap:first-child {
+    margin-top: 0;
   }
   
   .nav-right {
