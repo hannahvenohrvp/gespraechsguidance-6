@@ -38,8 +38,64 @@
 .nav-left {
   display: flex;
   align-items: center;
-  gap: 32px;
+  gap: 20px;
   flex-shrink: 0;
+}
+
+/* Oberflächen-Varianten-Schalter neben „Pflegehilfe CRM“ */
+.app-variant-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  user-select: none;
+}
+
+.app-variant-toggle__label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.app-variant-toggle__buttons {
+  display: inline-flex;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.app-variant-toggle__buttons button {
+  padding: 3px 10px;
+  border: none;
+  background: transparent;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.65);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.app-variant-toggle__buttons button + button {
+  border-left: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.app-variant-toggle__buttons button.is-active {
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+}
+
+.app-variant-toggle__buttons button:not(.is-active):hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.app-variant-toggle__buttons button:focus-visible {
+  outline: 2px solid #90caf9;
+  outline-offset: 1px;
+  z-index: 1;
 }
 
 .nav-center {
@@ -1142,6 +1198,8 @@
   gap: 10px;
   flex-shrink: 0;
   min-width: 0;
+  /* Rechtsbündig halten, auch wenn links kein Element mehr steht */
+  margin-left: auto;
 }
 
 .promo-toolbar-responsible-line {
@@ -1206,6 +1264,28 @@
   flex-shrink: 0;
   align-items: center;
   overflow: visible;
+}
+
+/* Kopfzeile rechts: Button-Reihe oben, „Verantwortlicher“ + 🔄 direkt darunter */
+.content-header .header-actions-column {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.header-actions-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.header-actions-meta .header-actions-refresh {
+  flex-shrink: 0;
+  padding: 0 4px;
+  font-size: 16px;
+  line-height: 1;
 }
 
 .content-header .header-actions-divider {
@@ -3184,8 +3264,8 @@
 
 /* Anfrage weiterleiten Modal */
 .weiterleiten-modal {
-  min-width: 1120px;
-  max-width: 1180px;
+  min-width: 1360px;
+  max-width: 1480px;
   padding: 16px;
 }
 
@@ -3234,18 +3314,41 @@
 .weiterleiten-grid {
   display: grid;
   grid-template-columns: 190px repeat(4, 1fr);
-  border: 1px solid #d6d6d6;
+  border: 1px solid #b0b6bd;
   margin-bottom: 12px;
 }
 
 /* Zeile 2 (Tools): Trennlinie zur Anbieter-Zeile (nur wenn Sitzlift-Zeile vorhanden) */
 .weiterleiten-grid:not(.weiterleiten-grid--ohne-sitzlift-zeile) > *:nth-child(n + 6) {
-  border-top: 1px solid #d6d6d6;
+  border-top: 1px solid #b0b6bd;
+}
+
+/* V2/V3 (nur Tools-Zeile): alle Kacheln in einer Zeile, Titel fest, Karten teilen sich den Rest */
+.weiterleiten-grid--ohne-sitzlift-zeile {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: stretch;
+}
+
+.weiterleiten-grid--ohne-sitzlift-zeile > .weiterleiten-column-title {
+  flex: 0 0 190px;
+}
+
+.weiterleiten-grid--ohne-sitzlift-zeile > .weiterleiten-anbieter-card {
+  flex: 1 1 0;
+  min-width: 0;
+  /* Kachel nicht über die ganze Breite strecken (z. B. wenn nur „Barrierefreies Zuhause“ sichtbar ist) */
+  max-width: 300px;
+}
+
+/* „Weitere“-Schaltfläche nur so breit wie nötig (spart Platz) */
+.weiterleiten-grid--ohne-sitzlift-zeile > .weiterleiten-weitere-card {
+  flex: 0 0 auto;
 }
 
 .weiterleiten-column-title {
   background: #fafafa;
-  border-right: 1px solid #d6d6d6;
+  border-right: 1px solid #b0b6bd;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -3282,15 +3385,17 @@
 }
 
 .weiterleiten-anbieter-card {
-  border-right: 1px solid #d6d6d6;
+  border-right: 1px solid #b0b6bd;
   padding: 8px 10px;
   min-height: 72px;
   box-sizing: border-box;
   background: #f0f6fa;
 }
 
-/* Letzte Spalte je Zeile: kein rechter Innenstrich (rechts nur noch freier Raum im Raster) */
-.weiterleiten-grid > .weiterleiten-anbieter-card:nth-child(5),
+/* Letzte Spalte je Zeile: kein rechter Innenstrich (rechts nur noch freier Raum im Raster).
+   nth-child(5) nur im V1-Raster (mit Sitzlift-Zeile) – im einzeiligen V2/V3-Flexlayout
+   würde es sonst die Trennlinie nach „Zuschüsse & Vorsorge“ entfernen. */
+.weiterleiten-grid:not(.weiterleiten-grid--ohne-sitzlift-zeile) > .weiterleiten-anbieter-card:nth-child(5),
 .weiterleiten-grid > .weiterleiten-anbieter-card:last-child {
   border-right: none;
 }
@@ -3367,14 +3472,40 @@ button.anbieter-check {
   margin-bottom: 0;
 }
 
-/* Variante 2: „Kein akuter Bedarf: E-Mail-Strecke“ – gleicher grüner Tool-Kachel-Hintergrund wie die Nachbarn */
+.weiterleiten-weitere-card {
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  border-right: 1px solid #b0b6bd;
+  background: #ffffff;
+}
+
+.weiterleiten-weitere-button {
+  min-width: 70px;
+  margin: 4px 0 0 0;
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+/* „Kein akuter Bedarf: E-Mail-Strecke“ – helles Grau */
+.weiterleiten-kontakt-praeferenzen-box.weiterleiten-tool-card,
+.weiterleiten-kontakt-praeferenzen-box.weiterleiten-tool-card.selected {
+  background: #f1f3f5 !important;
+}
+
 .weiterleiten-kontakt-praeferenzen-box .anbieter-name {
   text-align: left;
 }
 
 .weiterleiten-v3-kontakt-praeferenzen-kachel.weiterleiten-tool-card,
 .weiterleiten-v3-kontakt-praeferenzen-kachel.weiterleiten-tool-card.selected {
-  background: #fde8e8 !important;
+  background: #fbd5d5 !important;
 }
 
 .weiterleiten-v3-kontakt-praeferenzen-kachel .anbieter-name {
@@ -3937,8 +4068,14 @@ button.anbieter-check {
   font-weight: 600;
 }
 
-.einstellungen-demo-segment-buttons button:not(.is-active):hover {
+.einstellungen-demo-segment-buttons button:not(.is-active):not(.is-disabled):hover {
   background: #f3f4f6;
+}
+
+.einstellungen-demo-segment-buttons button.is-disabled {
+  color: #c0c4cc;
+  cursor: not-allowed;
+  background: transparent;
 }
 
 .einstellungen-demo-segment-buttons button:focus-visible {
@@ -4307,4 +4444,95 @@ button.anbieter-check {
   .app-toast-icon--email {
     animation: none;
   }
+}
+
+/* Variante 2 – Nachbetreuung-Einstieg (ersetzt den Anfrage-Titel) */
+.nachbetreuung-einstieg {
+  flex: 1;
+  min-width: 0;
+}
+
+.nachbetreuung-einstieg__title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 22px;
+  font-weight: 700;
+  color: #212121;
+  letter-spacing: -0.3px;
+  margin: 0;
+}
+
+.nachbetreuung-einstieg__icon {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.nachbetreuung-einstieg__meta {
+  margin: 6px 0 12px;
+  font-size: 13px;
+  color: #757575;
+}
+
+.nachbetreuung-einstieg__link {
+  color: #757575;
+  text-decoration: underline;
+}
+
+.nachbetreuung-einstieg__link:hover {
+  color: #5c5c5c;
+}
+
+.nachbetreuung-einstieg__cols {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.nachbetreuung-einstieg__col {
+  flex: 1 1 280px;
+  min-width: 0;
+  border: 1px solid #d6d6d6;
+  border-radius: 4px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.nachbetreuung-einstieg__col-head {
+  padding: 8px 12px;
+  background: #9e9e9e;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.nachbetreuung-einstieg__col-body {
+  display: flex;
+  flex-direction: column;
+  padding: 6px 0;
+}
+
+.nachbetreuung-einstieg__col-body a {
+  padding: 6px 12px;
+  font-size: 14px;
+  color: #1976d2;
+  text-decoration: none;
+}
+
+.nachbetreuung-einstieg__col-body a:hover {
+  background: #f5f5f5;
+  text-decoration: underline;
+}
+
+.nachbetreuung-einstieg__empty {
+  padding: 6px 12px;
+  font-size: 14px;
+  color: #757575;
+}
+
+.nachbetreuung-einstieg__broschuere-gruen {
+  padding: 6px 12px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #2e7d32;
 }

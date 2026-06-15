@@ -344,7 +344,7 @@ const guidanceData: GuidanceSection[] = [
         title: 'Zusammenfassung',
         entries: [
           {
-            title: 'Speichern & Weiter',
+            title: 'Anfrage abschließen',
             text: 'Vielen Dank. Dann haben wir nun **alle wichtigen Informationen** zusammen, damit ich Ihnen die passenden **Ansprechpartner** an die Hand geben kann.'
           }
         ]
@@ -923,7 +923,6 @@ const AnfrageSitzlift: React.FC = () => {
     barrierefreiheit: [] as string[], // Multiselect
     wohnsituation: [] as string[], // Multiselect
     aktuelleVersorgung: [] as string[], // Multiselect
-    toolsUndInformationen: [] as string[], // Multiselect
     seniorAnrede: '',
     seniorAkademGrad: '',
     seniorVorname: '',
@@ -971,6 +970,10 @@ const AnfrageSitzlift: React.FC = () => {
   /** Header: V1 = mit Bewertung, V2 = ohne Bewertung (kompakt), V3 = ohne Bewertung (Platzhalter) */
   const [headerUiVersion, setHeaderUiVersion] = useState<1 | 2 | 3>(1);
   const bewertungAusgeblendet = headerUiVersion !== 1;
+  /** Komplette Oberflächen-Variante (neben „Pflegehilfe CRM“ umschaltbar). Aktuell sind alle 3
+   *  identisch (= Variante 1). Zum Abweichen einer Variante an der gewünschten Stelle mit
+   *  `appVariant === n ? (…) : (…)` verzweigen. */
+  const [appVariant, setAppVariant] = useState<1 | 2 | 3>(1);
   /** Oberfläche: Dashboard vs. Anfrage-Detail (Klienten) */
   const [crmMainView, setCrmMainView] = useState<'dashboard' | 'anfrage'>('anfrage');
   const aktionenDropdownRef = useRef<HTMLDivElement>(null);
@@ -984,6 +987,16 @@ const AnfrageSitzlift: React.FC = () => {
   } | null>(null);
   const [erreichbarkeit, setErreichbarkeit] = useState({ ganztägig: false, vormittags: false, nachmittags: false, abends: false });
   const [zustimmungKontaktweitergabe, setZustimmungKontaktweitergabe] = useState(false);
+  const [zustimmungNachgespraechBeratung, setZustimmungNachgespraechBeratung] = useState(false);
+  const [weiterleitenPopupVersion, setWeiterleitenPopupVersion] = useState<1 | 2 | 3 | 4>(1);
+  const [weiterleitenV3Tools, setWeiterleitenV3Tools] = useState({
+    pflegegradChecked: true,
+    kontaktPraeferenzenChecked: false,
+    pflegeWohnenChecked: false,
+    hilfsmittelMobilitaetChecked: false,
+    zuschuesseVorsorgeChecked: false,
+    showMoreTools: false,
+  });
   const [editingPhoneId, setEditingPhoneId] = useState<string | null>(null);
   const [phoneModalData, setPhoneModalData] = useState({
     type: 'Mobil',
@@ -992,6 +1005,175 @@ const AnfrageSitzlift: React.FC = () => {
   });
   const [phoneValidationError, setPhoneValidationError] = useState('');
   const nextPhoneIdRef = useRef(2);
+
+  useEffect(() => {
+    if (!isWeiterleitenModalOpen || weiterleitenPopupVersion === 1) {
+      return;
+    }
+
+    // App-Variante 3 hat dieselbe Popup-Logik wie App-Variante 2
+    const istAppVariante2Oder3 = appVariant === 2 || appVariant === 3;
+
+    // App-Variante 2 & 3 · Popup-Variante 4 → alle Broschüren angezeigt, nichts vorausgewählt.
+    if (istAppVariante2Oder3 && weiterleitenPopupVersion === 4) {
+      setWeiterleitenV3Tools({
+        pflegegradChecked: false,
+        kontaktPraeferenzenChecked: false,
+        pflegeWohnenChecked: false,
+        hilfsmittelMobilitaetChecked: false,
+        zuschuesseVorsorgeChecked: false,
+        showMoreTools: true,
+      });
+      return;
+    }
+
+    // App-Variante 2 & 3:
+    //  · Popup-Variante 2 → „Hilfsmittel & Mobilität“ als 2. Kachel angeheftet & vorausgewählt,
+    //    „Weitere“ eingeklappt (restliche Broschüren auf Klick).
+    //  · Popup-Variante 3 → alle Broschüren angezeigt (ausgeklappt) und vorausgewählt.
+    const alleBroschueren = istAppVariante2Oder3 && weiterleitenPopupVersion === 3;
+    setWeiterleitenV3Tools({
+      pflegegradChecked: true,
+      kontaktPraeferenzenChecked: false,
+      pflegeWohnenChecked: alleBroschueren,
+      hilfsmittelMobilitaetChecked: istAppVariante2Oder3,
+      zuschuesseVorsorgeChecked: alleBroschueren,
+      showMoreTools: alleBroschueren,
+    });
+  }, [isWeiterleitenModalOpen, weiterleitenPopupVersion, appVariant]);
+
+  // Popup-Variante 4 nur in App-Variante 2 & 3, Popup-Variante 3 nicht in App-Variante 1 – sonst auf 1 zurücksetzen
+  useEffect(() => {
+    if (appVariant === 1 && weiterleitenPopupVersion === 4) {
+      setWeiterleitenPopupVersion(1);
+    }
+    if (appVariant === 1 && weiterleitenPopupVersion === 3) {
+      setWeiterleitenPopupVersion(1);
+    }
+    // Popup-Variante 2 gibt es in App-Variante 3 nicht
+    if (appVariant === 3 && weiterleitenPopupVersion === 2) {
+      setWeiterleitenPopupVersion(1);
+    }
+  }, [appVariant, weiterleitenPopupVersion]);
+
+  // Popup-Varianten 2/3/4 zeigen die interaktiven Broschüren-Kacheln (statt der Sitzlift-Anbieter)
+  const weiterleitenZeigtTools =
+    weiterleitenPopupVersion === 2 ||
+    weiterleitenPopupVersion === 3 ||
+    weiterleitenPopupVersion === 4;
+
+  // „Kein akuter Bedarf: E-Mail-Strecke“ nur, wenn ALLE grünen Broschüren abgewählt sind
+  const keineBroschuereAusgewaehlt =
+    !weiterleitenV3Tools.pflegegradChecked &&
+    !weiterleitenV3Tools.pflegeWohnenChecked &&
+    !weiterleitenV3Tools.hilfsmittelMobilitaetChecked &&
+    !weiterleitenV3Tools.zuschuesseVorsorgeChecked;
+
+  // „Kein akuter Bedarf: E-Mail-Strecke“ + „Kontakt-Präferenzen“ in Popup-Variante 2/3/4,
+  // sobald keine grüne Broschüre gewählt ist (in V4 also direkt von Beginn an)
+  const weiterleitenV2EmailStreckeSichtbar =
+    weiterleitenZeigtTools && keineBroschuereAusgewaehlt;
+
+  const weiterleitenV2V3NachgespraechZustimmungErforderlich =
+    weiterleitenV2EmailStreckeSichtbar
+      ? false
+      : weiterleitenPopupVersion === 3
+        ? true
+        : weiterleitenZeigtTools &&
+          weiterleitenV3Tools.pflegegradChecked;
+
+  const weiterleitenAbschickenEnabled =
+    weiterleitenPopupVersion === 1
+      ? zustimmungKontaktweitergabe &&
+        zustimmungNachgespraechBeratung &&
+        (erreichbarkeit.ganztägig ||
+          erreichbarkeit.vormittags ||
+          erreichbarkeit.nachmittags ||
+          erreichbarkeit.abends)
+      : weiterleitenV2V3NachgespraechZustimmungErforderlich
+        ? zustimmungNachgespraechBeratung
+        : true;
+
+  const toggleWeiterleitenV3Pflegegrad = () => {
+    setWeiterleitenV3Tools((prev) => {
+      const next = !prev.pflegegradChecked;
+      return {
+        ...prev,
+        pflegegradChecked: next,
+        // Beim Anhaken „Kontakt-Präferenzen“ lösen
+        ...(next ? { kontaktPraeferenzenChecked: false } : {}),
+      };
+    });
+  };
+
+  // „Kein akuter Bedarf: E-Mail-Strecke“ ist angehakt, solange Kontakt-Präferenzen
+  // nicht gewählt ist. Klick darauf wählt Kontakt-Präferenzen ab (= E-Mail-Strecke an).
+  const selectWeiterleitenV3EmailStrecke = () => {
+    setWeiterleitenV3Tools((prev) => ({
+      ...prev,
+      kontaktPraeferenzenChecked: false,
+    }));
+  };
+
+  const toggleWeiterleitenV3KontaktPraeferenzen = () => {
+    setWeiterleitenV3Tools((prev) => {
+      const next = !prev.kontaktPraeferenzenChecked;
+      // Beim Aktivieren von „Kontakt-Präferenzen“ alle anderen Häkchen entfernen
+      return next
+        ? {
+            ...prev,
+            kontaktPraeferenzenChecked: true,
+            pflegegradChecked: false,
+            pflegeWohnenChecked: false,
+            hilfsmittelMobilitaetChecked: false,
+            zuschuesseVorsorgeChecked: false,
+          }
+        : {
+            ...prev,
+            kontaktPraeferenzenChecked: false,
+          };
+    });
+  };
+
+  const handleWeiterleitenWeitereClick = () => {
+    setWeiterleitenV3Tools((prev) => ({
+      ...prev,
+      showMoreTools: !prev.showMoreTools,
+    }));
+  };
+
+  const toggleWeiterleitenV3PflegeWohnen = () => {
+    setWeiterleitenV3Tools((prev) => {
+      const next = !prev.pflegeWohnenChecked;
+      return {
+        ...prev,
+        pflegeWohnenChecked: next,
+        ...(next ? { kontaktPraeferenzenChecked: false } : {}),
+      };
+    });
+  };
+
+  const toggleWeiterleitenV3HilfsmittelMobilitaet = () => {
+    setWeiterleitenV3Tools((prev) => {
+      const next = !prev.hilfsmittelMobilitaetChecked;
+      return {
+        ...prev,
+        hilfsmittelMobilitaetChecked: next,
+        ...(next ? { kontaktPraeferenzenChecked: false } : {}),
+      };
+    });
+  };
+
+  const toggleWeiterleitenV3ZuschuesseVorsorge = () => {
+    setWeiterleitenV3Tools((prev) => {
+      const next = !prev.zuschuesseVorsorgeChecked;
+      return {
+        ...prev,
+        zuschuesseVorsorgeChecked: next,
+        ...(next ? { kontaktPraeferenzenChecked: false } : {}),
+      };
+    });
+  };
 
   // Produktauswahl: Reiter unter "Produktempfehlung", UI wie im Screenshot (Name, "X von Y AN", ×)
   const [produktTabs, setProduktTabs] = useState<{ id: string; label: string; count: number; maxAN: number }[]>([
@@ -1352,13 +1534,6 @@ const AnfrageSitzlift: React.FC = () => {
     return flagMap[countryCode] || null;
   };
 
-  const weiterleitenAbschickenEnabled =
-    zustimmungKontaktweitergabe &&
-    (erreichbarkeit.ganztägig ||
-      erreichbarkeit.vormittags ||
-      erreichbarkeit.nachmittags ||
-      erreichbarkeit.abends);
-
   /** Modals, die die Gesprächshilfen ausgrauen (nicht das „Anfrage abschicken“-/Weiterleiten-Popup) */
   const guidanceSidebarObscuredByOtherModal =
     isKlientLoeschenModalOpen ||
@@ -1377,6 +1552,25 @@ const AnfrageSitzlift: React.FC = () => {
           <div className="logo">
             <span className="logo-icon">🏠</span>
             <span>Pflegehilfe CRM</span>
+          </div>
+          <div
+            className="app-variant-toggle"
+            title="Oberflächen-Variante (Demo)"
+          >
+            <span className="app-variant-toggle__label">Variante</span>
+            <div className="app-variant-toggle__buttons" role="group" aria-label="Oberflächen-Variante">
+              {([1, 2, 3] as const).map((v) => (
+                <button
+                  key={v}
+                  type="button"
+                  className={appVariant === v ? 'is-active' : ''}
+                  aria-pressed={appVariant === v}
+                  onClick={() => setAppVariant(v)}
+                >
+                  {v}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
         <div className="nav-center">
@@ -1529,194 +1723,355 @@ const AnfrageSitzlift: React.FC = () => {
                 obscured={guidanceSidebarObscured}
               />
 
-              {/* Anfrage weiterleiten / „Anfrage abschicken“ */}
+              {/* Anfrage anschließen / Anfrage abschließen */}
               {isWeiterleitenModalOpen && (
                 <div
                   className="main-content-modal-overlay"
                   onClick={() => setIsWeiterleitenModalOpen(false)}
                 >
                   <div
-                    className="modal-content weiterleiten-modal weiterleiten-modal--v1"
+                    className={`modal-content weiterleiten-modal weiterleiten-modal--v${weiterleitenPopupVersion}`}
                     onClick={(e) => e.stopPropagation()}
                   >
-            <div className="weiterleiten-modal-kopfzeile">
-              <h2 className="modal-title modal-title-weiterleiten-kopf">Anfrage abschicken</h2>
-            </div>
+                    <div className="weiterleiten-modal-kopfzeile">
+                      <h2 className="modal-title modal-title-weiterleiten-kopf">Anfrage abschließen</h2>
+                      <div className="weiterleiten-version-toggle" title="Variante des Popups (Vorschau)">
+                        <span className="weiterleiten-version-toggle-label">Variante</span>
+                        <div className="einstellungen-demo-segment-buttons" role="group" aria-label="Anfrage abschließen Variante">
+                          <button
+                            type="button"
+                            className={weiterleitenPopupVersion === 1 ? 'is-active' : ''}
+                            onClick={() => setWeiterleitenPopupVersion(1)}
+                          >
+                            1
+                          </button>
+                          <button
+                            type="button"
+                            className={`${weiterleitenPopupVersion === 2 ? 'is-active' : ''}${appVariant === 3 ? ' is-disabled' : ''}`}
+                            onClick={() => {
+                              if (appVariant !== 3) setWeiterleitenPopupVersion(2);
+                            }}
+                            aria-disabled={appVariant === 3}
+                            title={appVariant === 3 ? 'Diesen Fall gibt es nun nicht.' : undefined}
+                          >
+                            2
+                          </button>
+                          {appVariant !== 1 && (
+                            <button
+                              type="button"
+                              className={weiterleitenPopupVersion === 3 ? 'is-active' : ''}
+                              onClick={() => setWeiterleitenPopupVersion(3)}
+                            >
+                              3
+                            </button>
+                          )}
+                          {(appVariant === 2 || appVariant === 3) && (
+                            <button
+                              type="button"
+                              className={weiterleitenPopupVersion === 4 ? 'is-active' : ''}
+                              onClick={() => setWeiterleitenPopupVersion(4)}
+                            >
+                              4
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
 
-            <div className="weiterleiten-grid">
-                  <div className="weiterleiten-column-title">Sitzlift</div>
-                  <div className="weiterleiten-anbieter-card selected">
-                    <div className="anbieter-head">
-                      <span className="anbieter-name">Sonilift GmbH</span>
-                      <span className="anbieter-check">✓</span>
-                    </div>
-                    <div className="anbieter-status">Kriterien Check erfolgreich!</div>
-                  </div>
-                  <div className="weiterleiten-anbieter-card selected">
-                    <div className="anbieter-head">
-                      <span className="anbieter-name">SANA Treppenlifte</span>
-                      <span className="anbieter-check">✓</span>
-                    </div>
-                    <div className="anbieter-status">Kriterien Check erfolgreich!</div>
-                  </div>
-                  <div className="weiterleiten-anbieter-card selected">
-                    <div className="anbieter-head">
-                      <span className="anbieter-name">Expertlift GmbH</span>
-                      <span className="anbieter-check">✓</span>
-                    </div>
-                    <div className="anbieter-status">Kriterien Check erfolgreich!</div>
-                  </div>
-                  <div className="weiterleiten-anbieter-card selected">
-                    <div className="anbieter-head">
-                      <span className="anbieter-name">Fairlifi Treppenlifte GmbH</span>
-                      <span className="anbieter-check">✓</span>
-                    </div>
-                    <div className="anbieter-status">Kriterien Check erfolgreich!</div>
-                  </div>
+                    <div
+                      className={`weiterleiten-grid${weiterleitenPopupVersion !== 1 ? ' weiterleiten-grid--ohne-sitzlift-zeile' : ''}`}
+                    >
+                      {weiterleitenPopupVersion === 1 && (
+                        <>
+                          <div className="weiterleiten-column-title">Sitzlift</div>
+                          <div className="weiterleiten-anbieter-card selected">
+                            <div className="anbieter-head">
+                              <span className="anbieter-name">Sonilift GmbH</span>
+                              <span className="anbieter-check">✓</span>
+                            </div>
+                            <div className="anbieter-status">Kriterien Check erfolgreich!</div>
+                          </div>
+                          <div className="weiterleiten-anbieter-card selected">
+                            <div className="anbieter-head">
+                              <span className="anbieter-name">SANA Treppenlifte</span>
+                              <span className="anbieter-check">✓</span>
+                            </div>
+                            <div className="anbieter-status">Kriterien Check erfolgreich!</div>
+                          </div>
+                          <div className="weiterleiten-anbieter-card selected">
+                            <div className="anbieter-head">
+                              <span className="anbieter-name">Expertlift GmbH</span>
+                              <span className="anbieter-check">✓</span>
+                            </div>
+                            <div className="anbieter-status">Kriterien Check erfolgreich!</div>
+                          </div>
+                          <div className="weiterleiten-anbieter-card selected">
+                            <div className="anbieter-head">
+                              <span className="anbieter-name">Fairlifi Treppenlifte GmbH</span>
+                              <span className="anbieter-check">✓</span>
+                            </div>
+                            <div className="anbieter-status">Kriterien Check erfolgreich!</div>
+                          </div>
+                        </>
+                      )}
 
-              <div className="weiterleiten-column-title weiterleiten-column-title--tools">
-                <span className="weiterleiten-tools-heading">Tools &amp; Informationen</span>
-                <p className="weiterleiten-tools-subhint">Die Auswahl wird dem Klienten via E-Mail zugesendet.</p>
-              </div>
-              <div className="weiterleiten-anbieter-card selected weiterleiten-tool-card">
-                <div className="anbieter-head">
-                  <span className="anbieter-name">Pflegegrad-Rechner</span>
-                  <span className="anbieter-check" aria-hidden="true">
-                    ✓
-                  </span>
-                </div>
-              </div>
-              <div className="weiterleiten-anbieter-card selected weiterleiten-tool-card">
-                <div className="anbieter-head">
-                  <span className="anbieter-name">Pflegezuschüsse &amp; -Leistungen</span>
-                  <span className="anbieter-check" aria-hidden="true">
-                    ✓
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <div className="weiterleiten-klient-block">
-              <div className="weiterleiten-klient-title">Klient / Interessent</div>
-              <div className="weiterleiten-klient-felder">
-                <div className="weiterleiten-klient-labels">
-                  <span className="weiterleiten-klient-label">Anrede</span>
-                  <span className="weiterleiten-klient-label">Vorname</span>
-                  <span className="weiterleiten-klient-label">Nachname</span>
-                  <span className="weiterleiten-klient-label">E-Mail</span>
-                </div>
-                <div className="weiterleiten-klient-inputs">
-                  <div className="weiterleiten-klient-cell">
-                    <div className="radio-group">
-                      <label><input type="radio" name="weiterleiten-anrede" value="Frau" checked={formData.anrede === 'Frau'} onChange={(e) => setFormData(prev => ({ ...prev, anrede: e.target.value }))} /> Frau</label>
-                      <label><input type="radio" name="weiterleiten-anrede" value="Herr" checked={formData.anrede === 'Herr'} onChange={(e) => setFormData(prev => ({ ...prev, anrede: e.target.value }))} /> Herr</label>
+                      {weiterleitenPopupVersion !== 1 && (
+                        <>
+                          <div className="weiterleiten-column-title weiterleiten-column-title--tools">
+                            <span className="weiterleiten-tools-heading">Informationsbroschüre</span>
+                            <p className="weiterleiten-tools-subhint">Wird dem Klienten via E-Mail zugesendet.</p>
+                          </div>
+                          <div className="weiterleiten-anbieter-card selected weiterleiten-tool-card">
+                            <div className="anbieter-head">
+                              <span className="anbieter-name">Barrierefreies Zuhause</span>
+                              {weiterleitenZeigtTools ? (
+                                <button
+                                  type="button"
+                                  className={`anbieter-check${weiterleitenV3Tools.pflegegradChecked ? '' : ' anbieter-check--unchecked'}`}
+                                  onClick={toggleWeiterleitenV3Pflegegrad}
+                                  aria-pressed={weiterleitenV3Tools.pflegegradChecked}
+                                  aria-label="Barrierefreies Zuhause in die E-Mail-Auswahl aufnehmen"
+                                >
+                                  {weiterleitenV3Tools.pflegegradChecked ? '✓' : ''}
+                                </button>
+                              ) : (
+                                <span className="anbieter-check" aria-hidden="true">✓</span>
+                              )}
+                            </div>
+                          </div>
+                          {(appVariant === 2 || appVariant === 3) && (
+                            <div className="weiterleiten-anbieter-card selected weiterleiten-tool-card">
+                              <div className="anbieter-head">
+                                <span className="anbieter-name">Hilfsmittel & Mobilität</span>
+                                <button
+                                  type="button"
+                                  className={`anbieter-check${weiterleitenV3Tools.hilfsmittelMobilitaetChecked ? '' : ' anbieter-check--unchecked'}`}
+                                  onClick={toggleWeiterleitenV3HilfsmittelMobilitaet}
+                                  aria-pressed={weiterleitenV3Tools.hilfsmittelMobilitaetChecked}
+                                  aria-label="Hilfsmittel & Mobilität in die E-Mail-Auswahl aufnehmen"
+                                >
+                                  {weiterleitenV3Tools.hilfsmittelMobilitaetChecked ? '✓' : ''}
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                          {!weiterleitenV3Tools.showMoreTools && (
+                            <div className="weiterleiten-anbieter-card weiterleiten-weitere-card">
+                              <button
+                                type="button"
+                                className="btn-blue weiterleiten-weitere-button"
+                                onClick={handleWeiterleitenWeitereClick}
+                                aria-label="Weitere Informationsbroschüren anzeigen"
+                              >
+                                Weitere
+                              </button>
+                            </div>
+                          )}
+                          {weiterleitenV3Tools.showMoreTools && (
+                            <>
+                              <div className="weiterleiten-anbieter-card selected weiterleiten-tool-card">
+                                <div className="anbieter-head">
+                                  <span className="anbieter-name">Pflege & Wohnen</span>
+                                  <button
+                                    type="button"
+                                    className={`anbieter-check${weiterleitenV3Tools.pflegeWohnenChecked ? '' : ' anbieter-check--unchecked'}`}
+                                    onClick={toggleWeiterleitenV3PflegeWohnen}
+                                    aria-pressed={weiterleitenV3Tools.pflegeWohnenChecked}
+                                    aria-label="Pflege & Wohnen in die E-Mail-Auswahl aufnehmen"
+                                  >
+                                    {weiterleitenV3Tools.pflegeWohnenChecked ? '✓' : ''}
+                                  </button>
+                                </div>
+                              </div>
+                              {appVariant !== 2 && appVariant !== 3 && (
+                              <div className="weiterleiten-anbieter-card selected weiterleiten-tool-card">
+                                <div className="anbieter-head">
+                                  <span className="anbieter-name">Hilfsmittel & Mobilität</span>
+                                  <button
+                                    type="button"
+                                    className={`anbieter-check${weiterleitenV3Tools.hilfsmittelMobilitaetChecked ? '' : ' anbieter-check--unchecked'}`}
+                                    onClick={toggleWeiterleitenV3HilfsmittelMobilitaet}
+                                    aria-pressed={weiterleitenV3Tools.hilfsmittelMobilitaetChecked}
+                                    aria-label="Hilfsmittel & Mobilität in die E-Mail-Auswahl aufnehmen"
+                                  >
+                                    {weiterleitenV3Tools.hilfsmittelMobilitaetChecked ? '✓' : ''}
+                                  </button>
+                                </div>
+                              </div>
+                              )}
+                              <div className="weiterleiten-anbieter-card selected weiterleiten-tool-card">
+                                <div className="anbieter-head">
+                                  <span className="anbieter-name">Zuschüsse & Vorsorge</span>
+                                  <button
+                                    type="button"
+                                    className={`anbieter-check${weiterleitenV3Tools.zuschuesseVorsorgeChecked ? '' : ' anbieter-check--unchecked'}`}
+                                    onClick={toggleWeiterleitenV3ZuschuesseVorsorge}
+                                    aria-pressed={weiterleitenV3Tools.zuschuesseVorsorgeChecked}
+                                    aria-label="Zuschüsse & Vorsorge in die E-Mail-Auswahl aufnehmen"
+                                  >
+                                    {weiterleitenV3Tools.zuschuesseVorsorgeChecked ? '✓' : ''}
+                                  </button>
+                                </div>
+                              </div>
+                            </>
+                          )}
+                          {weiterleitenV2EmailStreckeSichtbar && (
+                            <div className="weiterleiten-anbieter-card selected weiterleiten-tool-card weiterleiten-kontakt-praeferenzen-box">
+                              <div className="anbieter-head">
+                                <span className="anbieter-name">Kein akuter Bedarf:<br />E-Mail-Strecke</span>
+                                <button
+                                  type="button"
+                                  className={`anbieter-check${weiterleitenV3Tools.kontaktPraeferenzenChecked ? ' anbieter-check--unchecked' : ''}`}
+                                  onClick={selectWeiterleitenV3EmailStrecke}
+                                  aria-pressed={!weiterleitenV3Tools.kontaktPraeferenzenChecked}
+                                  aria-label="Kein akuter Bedarf: E-Mail-Strecke auswählen"
+                                >
+                                  {weiterleitenV3Tools.kontaktPraeferenzenChecked ? '' : '✓'}
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                          {weiterleitenV2EmailStreckeSichtbar && (
+                            <div className="weiterleiten-anbieter-card selected weiterleiten-tool-card weiterleiten-v3-kontakt-praeferenzen-kachel">
+                              <div className="anbieter-head">
+                                <span className="anbieter-name">Kontakt-Präferenzen</span>
+                                <button
+                                  type="button"
+                                  className={`anbieter-check${weiterleitenV3Tools.kontaktPraeferenzenChecked ? '' : ' anbieter-check--unchecked'}`}
+                                  onClick={toggleWeiterleitenV3KontaktPraeferenzen}
+                                  aria-pressed={weiterleitenV3Tools.kontaktPraeferenzenChecked}
+                                  aria-label="Kontakt-Präferenzen in die E-Mail-Auswahl aufnehmen"
+                                >
+                                  {weiterleitenV3Tools.kontaktPraeferenzenChecked ? '✓' : ''}
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                        </>
+                      )}
                     </div>
-                  </div>
-                  <div className="weiterleiten-klient-cell">
-                    <input type="text" value={formData.vorname} onChange={(e) => setFormData(prev => ({ ...prev, vorname: e.target.value }))} placeholder="Vorname" />
-                  </div>
-                  <div className="weiterleiten-klient-cell">
-                    <input type="text" value={formData.nachname} onChange={(e) => setFormData(prev => ({ ...prev, nachname: e.target.value }))} placeholder="Nachname" />
-                  </div>
-                  <div className="weiterleiten-klient-cell">
-                    <input type="email" value={formData.email} onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))} placeholder="E-Mail" />
-                  </div>
-                </div>
-              </div>
-              <div className="weiterleiten-klient-erreichbarkeit">
-                  <div className="weiterleiten-options-title">Beste telefonische Erreichbarkeit</div>
-                  <div className="weiterleiten-options">
-                    <label className={!erreichbarkeit.ganztägig ? 'weiterleiten-option-unchecked' : ''}>
-                      <input
-                        type="checkbox"
-                        checked={erreichbarkeit.ganztägig}
-                        onChange={(e) => {
-                          const checked = e.target.checked;
-                          setErreichbarkeit((prev) => ({
-                            ...prev,
-                            ganztägig: checked,
-                            ...(checked ? { vormittags: true, nachmittags: true, abends: true } : {})
-                          }));
-                        }}
-                      />
-                      Ganztägig
-                    </label>
-                    <span className="weiterleiten-option-separator" aria-hidden="true" />
-                    <label className={!erreichbarkeit.vormittags ? 'weiterleiten-option-unchecked' : ''}>
-                      <input
-                        type="checkbox"
-                        checked={erreichbarkeit.vormittags}
-                        onChange={(e) => setErreichbarkeit((prev) => ({ ...prev, vormittags: e.target.checked }))}
-                      />
-                      Vormittags
-                    </label>
-                    <label className={!erreichbarkeit.nachmittags ? 'weiterleiten-option-unchecked' : ''}>
-                      <input
-                        type="checkbox"
-                        checked={erreichbarkeit.nachmittags}
-                        onChange={(e) => setErreichbarkeit((prev) => ({ ...prev, nachmittags: e.target.checked }))}
-                      />
-                      Nachmittags
-                    </label>
-                    <label className={!erreichbarkeit.abends ? 'weiterleiten-option-unchecked' : ''}>
-                      <input
-                        type="checkbox"
-                        checked={erreichbarkeit.abends}
-                        onChange={(e) => setErreichbarkeit((prev) => ({ ...prev, abends: e.target.checked }))}
-                      />
-                      Abends
-                    </label>
-                  </div>
-                </div>
-              <div className="weiterleiten-klient-zustimmung">
-                <label className={`weiterleiten-consent ${!zustimmungKontaktweitergabe ? 'weiterleiten-option-unchecked' : ''}`}>
-                  <input
-                    type="checkbox"
-                    checked={zustimmungKontaktweitergabe}
-                    onChange={(e) => setZustimmungKontaktweitergabe(e.target.checked)}
-                  />
-                  Zustimmung zur Kontaktweitergabe &amp; -aufnahme durch die genannten Anbieter
-                </label>
-              </div>
-            </div>
 
-            <div className="weiterleiten-bottom-grid">
-              <div className="weiterleiten-followup-block">
-                <div className="weiterleiten-followup-fields weiterleiten-followup-stacked">
-                  <div className="weiterleiten-followup-field">
-                    <div className="weiterleiten-followup-field-label">Nachbetreuung am</div>
-                    <input type="text" defaultValue="04.03.26" aria-label="Nachbetreuung am" />
-                  </div>
-                  <div className="weiterleiten-followup-field">
-                    <div className="weiterleiten-followup-field-label">Uhrzeit</div>
-                    <input type="text" defaultValue="16:18" aria-label="Uhrzeit" />
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="weiterleiten-footer weiterleiten-footer--stacked">
-              <div className="weiterleiten-footer-trailing">
-                <div className="weiterleiten-note">
-                  Super - die umsatzstärkste Anbieterauswahl wurde ausgewählt!
-                </div>
-                <div className="weiterleiten-actions">
-                  <button
-                    type="button"
-                    className="btn-blue"
-                    disabled={!weiterleitenAbschickenEnabled}
-                    onClick={() => {
-                      showAppToast('email');
-                      setIsWeiterleitenModalOpen(false);
-                    }}
-                  >
-                    Abschicken
-                  </button>
-                  <button type="button" className="btn-orange" onClick={() => setIsWeiterleitenModalOpen(false)}>
-                    Abbrechen
-                  </button>
-                </div>
-              </div>
-            </div>
+                    <div className="weiterleiten-klient-block">
+                      {weiterleitenPopupVersion === 1 && (
+                        <div className="weiterleiten-klient-erreichbarkeit">
+                          <div className="weiterleiten-options-title">Beste telefonische Erreichbarkeit</div>
+                          <div className="weiterleiten-options">
+                            <label className={!erreichbarkeit.ganztägig ? 'weiterleiten-option-unchecked' : ''}>
+                              <input
+                                type="checkbox"
+                                checked={erreichbarkeit.ganztägig}
+                                onChange={(e) => {
+                                  const checked = e.target.checked;
+                                  setErreichbarkeit((prev) => ({
+                                    ...prev,
+                                    ganztägig: checked,
+                                    ...(checked ? { vormittags: true, nachmittags: true, abends: true } : {})
+                                  }));
+                                }}
+                              />
+                              Ganztägig
+                            </label>
+                            <span className="weiterleiten-option-separator" aria-hidden="true" />
+                            <label className={!erreichbarkeit.vormittags ? 'weiterleiten-option-unchecked' : ''}>
+                              <input
+                                type="checkbox"
+                                checked={erreichbarkeit.vormittags}
+                                onChange={(e) => setErreichbarkeit((prev) => ({ ...prev, vormittags: e.target.checked }))}
+                              />
+                              Vormittags
+                            </label>
+                            <label className={!erreichbarkeit.nachmittags ? 'weiterleiten-option-unchecked' : ''}>
+                              <input
+                                type="checkbox"
+                                checked={erreichbarkeit.nachmittags}
+                                onChange={(e) => setErreichbarkeit((prev) => ({ ...prev, nachmittags: e.target.checked }))}
+                              />
+                              Nachmittags
+                            </label>
+                            <label className={!erreichbarkeit.abends ? 'weiterleiten-option-unchecked' : ''}>
+                              <input
+                                type="checkbox"
+                                checked={erreichbarkeit.abends}
+                                onChange={(e) => setErreichbarkeit((prev) => ({ ...prev, abends: e.target.checked }))}
+                              />
+                              Abends
+                            </label>
+                          </div>
+                        </div>
+                      )}
+                      {(weiterleitenPopupVersion === 1 ||
+                        !weiterleitenV2EmailStreckeSichtbar) && (
+                        <div className="weiterleiten-klient-zustimmung">
+                          {weiterleitenPopupVersion === 1 && (
+                            <label className={`weiterleiten-consent ${!zustimmungKontaktweitergabe ? 'weiterleiten-option-unchecked' : ''}`}>
+                              <input
+                                type="checkbox"
+                                checked={zustimmungKontaktweitergabe}
+                                onChange={(e) => setZustimmungKontaktweitergabe(e.target.checked)}
+                              />
+                              Die genannten Anbieter werden Sie in den kommenden Tagen kontaktieren.
+                            </label>
+                          )}
+                          {!weiterleitenV2EmailStreckeSichtbar && (
+                            <label
+                              className={`weiterleiten-consent ${!zustimmungNachgespraechBeratung ? 'weiterleiten-option-unchecked' : ''}${weiterleitenZeigtTools && !weiterleitenV2V3NachgespraechZustimmungErforderlich ? ' weiterleiten-consent--optional' : ''}`}
+                            >
+                              <input
+                                type="checkbox"
+                                checked={zustimmungNachgespraechBeratung}
+                                onChange={(e) => setZustimmungNachgespraechBeratung(e.target.checked)}
+                                aria-required={
+                                  weiterleitenPopupVersion === 1 ||
+                                  (weiterleitenZeigtTools && weiterleitenV2V3NachgespraechZustimmungErforderlich)
+                                }
+                              />
+                              Wir werden uns per E-Mail bei Ihnen melden und in den nächsten Wochen ein Nachgespräch sowie eine weitere
+                              Beratung anbieten.
+                            </label>
+                          )}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="weiterleiten-bottom-grid">
+                      <div className="weiterleiten-followup-block">
+                        <div className="weiterleiten-followup-fields weiterleiten-followup-stacked">
+                          <div className="weiterleiten-followup-field">
+                            <div className="weiterleiten-followup-field-label">Nachbetreuung am</div>
+                            <input type="text" defaultValue="04.03.26" aria-label="Nachbetreuung am" />
+                          </div>
+                          <div className="weiterleiten-followup-field">
+                            <div className="weiterleiten-followup-field-label">Uhrzeit</div>
+                            <input type="text" defaultValue="16:18" aria-label="Uhrzeit" />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="weiterleiten-footer weiterleiten-footer--stacked">
+                      <div className="weiterleiten-footer-trailing">
+                        {weiterleitenPopupVersion === 1 && (
+                          <div className="weiterleiten-note">
+                            Super - die umsatzstärkste Anbieterauswahl wurde ausgewählt!
+                          </div>
+                        )}
+                        <div className="weiterleiten-actions">
+                          <button
+                            type="button"
+                            className="btn-blue"
+                            disabled={!weiterleitenAbschickenEnabled}
+                            onClick={() => {
+                              showAppToast('email');
+                              setIsWeiterleitenModalOpen(false);
+                            }}
+                          >
+                            Abschicken
+                          </button>
+                          <button type="button" className="btn-orange" onClick={() => setIsWeiterleitenModalOpen(false)}>
+                            Abbrechen
+                          </button>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               )}
@@ -1725,7 +2080,52 @@ const AnfrageSitzlift: React.FC = () => {
           {/* Header (sticky bis zur Trennlinie über „Pflegehilfe+ gebucht“) */}
           <div className="main-content-sticky-top">
           <div className="content-header">
-            <h1>Anfrage zu Sitzlift in Erstellt: 19. Januar 2026 13:54</h1>
+            {appVariant === 2 || appVariant === 3 ? (
+              <div className="nachbetreuung-einstieg">
+                <h1 className="nachbetreuung-einstieg__title">
+                  <span className="nachbetreuung-einstieg__icon" aria-hidden="true">🕐</span>
+                  Nachbetreuung
+                </h1>
+                <p className="nachbetreuung-einstieg__meta">
+                  <a
+                    href="#"
+                    className="nachbetreuung-einstieg__link"
+                    onClick={(e) => e.preventDefault()}
+                  >
+                    Zuletzt weitergeleitet
+                  </a>{' '}
+                  am 15. Juni 2026 14:09
+                </p>
+                <div className="nachbetreuung-einstieg__cols">
+                  <div className="nachbetreuung-einstieg__col">
+                    <div className="nachbetreuung-einstieg__col-head">Anbieterkontakt</div>
+                    <div className="nachbetreuung-einstieg__col-body">
+                      {appVariant === 3 ? (
+                        <span className="nachbetreuung-einstieg__empty">Nichts</span>
+                      ) : (
+                        <>
+                          <a href="#" onClick={(e) => e.preventDefault()}>Hausnotruf</a>
+                          <a href="#" onClick={(e) => e.preventDefault()}>Sitzlift</a>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                  <div className="nachbetreuung-einstieg__col">
+                    <div className="nachbetreuung-einstieg__col-head">Informationsbroschüren</div>
+                    <div className="nachbetreuung-einstieg__col-body">
+                      {appVariant === 3 ? (
+                        <span className="nachbetreuung-einstieg__broschuere-gruen">Barrierefreies Zuhause</span>
+                      ) : (
+                        <span className="nachbetreuung-einstieg__empty">Nichts</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <h1>Anfrage zu Sitzlift in Erstellt: 19. Januar 2026 13:54</h1>
+            )}
+            <div className="header-actions-column">
             <div
               className="header-actions"
               onMouseEnter={() => setFormData((prev) => ({ ...prev, activeGuidanceSection: 'abschluss' }))}
@@ -1747,37 +2147,6 @@ const AnfrageSitzlift: React.FC = () => {
                 </button>
                 {isAktionenDropdownOpen && (
                   <div className="aktionen-dropdown-menu" role="menu">
-                    <div className="aktionen-dropdown-section" role="none">
-                      <button
-                        type="button"
-                        className="aktionen-dropdown-item aktionen-dropdown-item--danger"
-                        role="menuitem"
-                        onClick={() => {
-                          setIsKlientLoeschenModalOpen(true);
-                          setIsAktionenDropdownOpen(false);
-                        }}
-                      >
-                        <span className="aktionen-dropdown-icon" aria-hidden="true">
-                          🗑️
-                        </span>
-                        Klient löschen
-                      </button>
-                      <button
-                        type="button"
-                        className="aktionen-dropdown-item"
-                        role="menuitem"
-                        onClick={() => {
-                          setIsAnrufEinstellungenModalOpen(true);
-                          setIsAktionenDropdownOpen(false);
-                        }}
-                      >
-                        <span className="aktionen-dropdown-icon" aria-hidden="true">
-                          📞
-                        </span>
-                        Anruf-Einstellungen
-                      </button>
-                    </div>
-                    <div className="aktionen-dropdown-divider" role="separator" />
                     <div className="aktionen-dropdown-section" role="none">
                       <button type="button" className="aktionen-dropdown-item" role="menuitem" onClick={() => setIsAktionenDropdownOpen(false)}>
                         <span className="aktionen-dropdown-icon" aria-hidden="true">📞</span>
@@ -1826,13 +2195,6 @@ const AnfrageSitzlift: React.FC = () => {
               </div>
               </div>
               <div className="header-actions-group">
-              <button
-                type="button"
-                className="btn-orange"
-                onClick={() => setCrmMainView('dashboard')}
-              >
-                Schließen
-              </button>
               <button type="button" className="btn-blue">
                 Freigeben
               </button>
@@ -1864,27 +2226,26 @@ const AnfrageSitzlift: React.FC = () => {
                 <span className="icon" aria-hidden="true">
                   ✓
                 </span>
-                <span>Speichern und weiter</span>
+                <span>Anfrage abschließen</span>
               </button>
               </div>
             </div>
-          </div>
-          </div>
-
-          <div className="main-content-promo-toolbar">
-            <div className="vermittlungsgarantie-info">
-              <span className="info-icon">👑</span>
-              <span>Pflegehilfe+ gebucht</span>
-            </div>
-            <div className="main-content-promo-toolbar__end">
+            <div className="header-actions-meta">
               <p className="promo-toolbar-responsible-line">
                 <span className="promo-toolbar-responsible-line__label">Verantwortlicher:</span>{' '}
                 <span className="promo-toolbar-responsible-line__email">hannah.venohr@pflegehilfe.de</span>
               </p>
-              <button type="button" className="icon-btn main-content-promo-toolbar__refresh" aria-label="Aktualisieren" title="Aktualisieren">
+              <button
+                type="button"
+                className="icon-btn header-actions-refresh"
+                aria-label="Aktualisieren"
+                title="Aktualisieren"
+              >
                 🔄
               </button>
             </div>
+          </div>
+          </div>
           </div>
 
           {/* Klient / Interessent (Persönliche Daten + Kontakt in zweiter Zeile) */}
@@ -2235,27 +2596,9 @@ const AnfrageSitzlift: React.FC = () => {
             onMouseEnter={() => setFormData(prev => ({ ...prev, activeGuidanceSection: 'weiterleitung' }))}
           >
             <div className="section-header green">
-              <h2>Weiterleitung</h2>
+              <h2>Produkte zusammenstellen</h2>
             </div>
             <div className="form-grid">
-              <div className="form-row">
-                <SelectField
-                  name="toolsUndInformationen"
-                  value={formData.toolsUndInformationen}
-                  onChange={handleSelectChange}
-                  label="Tools & Informationen (nur für Deutschland)"
-                  placeholder="Auswählen"
-                  multiple={true}
-                  options={[
-                    { value: 'Pflegegrad-Rechner', label: 'Pflegegrad-Rechner' },
-                    { value: 'Pflegezuschüsse & -Leistungen', label: 'Pflegezuschüsse & -Leistungen' }
-                  ]}
-                />
-              </div>
-
-              <div className="form-row">
-                <label className="field-label-same">Produkte</label>
-              </div>
 
               {/* Reiter-Container: Tab-Leiste + Inhalt als klassische Reiter */}
               <div className="produkt-reiter-container">
