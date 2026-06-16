@@ -4076,6 +4076,53 @@ button.anbieter-check {
   color: #c0c4cc;
   cursor: not-allowed;
   background: transparent;
+  position: relative;
+}
+
+/* Tooltip soll nicht abgeschnitten werden – Schalter im „Anfrage abschließen“-Popup nicht clippen */
+.weiterleiten-version-toggle .einstellungen-demo-segment-buttons {
+  overflow: visible;
+}
+
+.weiterleiten-version-toggle .einstellungen-demo-segment-buttons button:first-child {
+  border-top-left-radius: 6px;
+  border-bottom-left-radius: 6px;
+}
+
+.weiterleiten-version-toggle .einstellungen-demo-segment-buttons button:last-child {
+  border-top-right-radius: 6px;
+  border-bottom-right-radius: 6px;
+}
+
+/* Sichtbarer Tooltip beim Überfahren des deaktivierten „2“-Buttons */
+.einstellungen-demo-segment-buttons button.is-disabled[data-tooltip]:hover::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 8px);
+  right: 0;
+  white-space: nowrap;
+  background: #1f2937;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.3;
+  padding: 5px 9px;
+  border-radius: 5px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+  pointer-events: none;
+  z-index: 30;
+}
+
+/* kleines Dreieck unter dem Tooltip */
+.einstellungen-demo-segment-buttons button.is-disabled[data-tooltip]:hover::before {
+  content: "";
+  position: absolute;
+  bottom: calc(100% + 3px);
+  right: 10px;
+  border: 5px solid transparent;
+  border-top-color: #1f2937;
+  pointer-events: none;
+  z-index: 30;
 }
 
 .einstellungen-demo-segment-buttons button:focus-visible {
@@ -4496,6 +4543,12 @@ button.anbieter-check {
   border-radius: 4px;
   overflow: hidden;
   background: #fff;
+}
+
+/* Einzelne Box (App-Variante 6) nicht über die ganze Breite strecken */
+.nachbetreuung-einstieg__col--single {
+  flex: 0 1 320px;
+  max-width: 320px;
 }
 
 .nachbetreuung-einstieg__col-head {

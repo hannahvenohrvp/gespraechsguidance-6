@@ -973,7 +973,10 @@ const AnfrageSitzlift: React.FC = () => {
   /** Komplette Oberflächen-Variante (neben „Pflegehilfe CRM“ umschaltbar). Aktuell sind alle 3
    *  identisch (= Variante 1). Zum Abweichen einer Variante an der gewünschten Stelle mit
    *  `appVariant === n ? (…) : (…)` verzweigen. */
-  const [appVariant, setAppVariant] = useState<1 | 2 | 3>(1);
+  const [appVariant, setAppVariant] = useState<1 | 2 | 3 | 4 | 5 | 6>(1);
+  // App-Variante 4 verhält sich (zunächst) wie Variante 2; Variante 5 & 6 wie Variante 3.
+  // Variante 2 & 3 teilen fast alles (→ `appVariant !== 1`); nur die {3,5,6}-Spezifika brauchen diesen Helfer.
+  const istWieVariante3 = appVariant === 3 || appVariant === 5 || appVariant === 6;
   /** Oberfläche: Dashboard vs. Anfrage-Detail (Klienten) */
   const [crmMainView, setCrmMainView] = useState<'dashboard' | 'anfrage'>('anfrage');
   const aktionenDropdownRef = useRef<HTMLDivElement>(null);
@@ -1011,10 +1014,10 @@ const AnfrageSitzlift: React.FC = () => {
       return;
     }
 
-    // App-Variante 3 hat dieselbe Popup-Logik wie App-Variante 2
-    const istAppVariante2Oder3 = appVariant === 2 || appVariant === 3;
+    // App-Varianten 2–5 teilen sich die Popup-Logik (4 wie 2, 5 wie 3)
+    const istAppVariante2Oder3 = appVariant !== 1;
 
-    // App-Variante 2 & 3 · Popup-Variante 4 → alle Broschüren angezeigt, nichts vorausgewählt.
+    // Popup-Variante 4 → alle Broschüren angezeigt, nichts vorausgewählt.
     if (istAppVariante2Oder3 && weiterleitenPopupVersion === 4) {
       setWeiterleitenV3Tools({
         pflegegradChecked: false,
@@ -1050,8 +1053,8 @@ const AnfrageSitzlift: React.FC = () => {
     if (appVariant === 1 && weiterleitenPopupVersion === 3) {
       setWeiterleitenPopupVersion(1);
     }
-    // Popup-Variante 2 gibt es in App-Variante 3 nicht
-    if (appVariant === 3 && weiterleitenPopupVersion === 2) {
+    // Popup-Variante 2 gibt es in App-Variante 3/5/6 nicht
+    if (istWieVariante3 && weiterleitenPopupVersion === 2) {
       setWeiterleitenPopupVersion(1);
     }
   }, [appVariant, weiterleitenPopupVersion]);
@@ -1559,7 +1562,7 @@ const AnfrageSitzlift: React.FC = () => {
           >
             <span className="app-variant-toggle__label">Variante</span>
             <div className="app-variant-toggle__buttons" role="group" aria-label="Oberflächen-Variante">
-              {([1, 2, 3] as const).map((v) => (
+              {([1, 2, 3, 4, 5, 6] as const).map((v) => (
                 <button
                   key={v}
                   type="button"
@@ -1747,12 +1750,13 @@ const AnfrageSitzlift: React.FC = () => {
                           </button>
                           <button
                             type="button"
-                            className={`${weiterleitenPopupVersion === 2 ? 'is-active' : ''}${appVariant === 3 ? ' is-disabled' : ''}`}
+                            className={`${weiterleitenPopupVersion === 2 ? 'is-active' : ''}${istWieVariante3 ? ' is-disabled' : ''}`}
                             onClick={() => {
-                              if (appVariant !== 3) setWeiterleitenPopupVersion(2);
+                              if (!istWieVariante3) setWeiterleitenPopupVersion(2);
                             }}
-                            aria-disabled={appVariant === 3}
-                            title={appVariant === 3 ? 'Diesen Fall gibt es nun nicht.' : undefined}
+                            aria-disabled={istWieVariante3}
+                            aria-label={istWieVariante3 ? 'Variante 2 – Diesen Fall gibt es nun nicht.' : undefined}
+                            data-tooltip={istWieVariante3 ? 'Diesen Fall gibt es nun nicht.' : undefined}
                           >
                             2
                           </button>
@@ -1765,7 +1769,7 @@ const AnfrageSitzlift: React.FC = () => {
                               3
                             </button>
                           )}
-                          {(appVariant === 2 || appVariant === 3) && (
+                          {appVariant !== 1 && (
                             <button
                               type="button"
                               className={weiterleitenPopupVersion === 4 ? 'is-active' : ''}
@@ -1839,7 +1843,7 @@ const AnfrageSitzlift: React.FC = () => {
                               )}
                             </div>
                           </div>
-                          {(appVariant === 2 || appVariant === 3) && (
+                          {appVariant !== 1 && (
                             <div className="weiterleiten-anbieter-card selected weiterleiten-tool-card">
                               <div className="anbieter-head">
                                 <span className="anbieter-name">Hilfsmittel & Mobilität</span>
@@ -1883,7 +1887,7 @@ const AnfrageSitzlift: React.FC = () => {
                                   </button>
                                 </div>
                               </div>
-                              {appVariant !== 2 && appVariant !== 3 && (
+                              {appVariant === 1 && (
                               <div className="weiterleiten-anbieter-card selected weiterleiten-tool-card">
                                 <div className="anbieter-head">
                                   <span className="anbieter-name">Hilfsmittel & Mobilität</span>
@@ -2080,11 +2084,11 @@ const AnfrageSitzlift: React.FC = () => {
           {/* Header (sticky bis zur Trennlinie über „Pflegehilfe+ gebucht“) */}
           <div className="main-content-sticky-top">
           <div className="content-header">
-            {appVariant === 2 || appVariant === 3 ? (
+            {appVariant !== 1 ? (
               <div className="nachbetreuung-einstieg">
                 <h1 className="nachbetreuung-einstieg__title">
                   <span className="nachbetreuung-einstieg__icon" aria-hidden="true">🕐</span>
-                  Nachbetreuung
+                  {appVariant === 4 || appVariant === 5 || appVariant === 6 ? 'Lifetime Nachbetreuung' : 'Nachbetreuung'}
                 </h1>
                 <p className="nachbetreuung-einstieg__meta">
                   <a
@@ -2093,14 +2097,18 @@ const AnfrageSitzlift: React.FC = () => {
                     onClick={(e) => e.preventDefault()}
                   >
                     Zuletzt weitergeleitet
-                  </a>{' '}
-                  am 15. Juni 2026 14:09
+                  </a>
+                  {appVariant !== 6 && <>{' '}am 15. Juni 2026 14:09</>}
                 </p>
                 <div className="nachbetreuung-einstieg__cols">
-                  <div className="nachbetreuung-einstieg__col">
-                    <div className="nachbetreuung-einstieg__col-head">Anbieterkontakt</div>
+                  <div className={`nachbetreuung-einstieg__col${appVariant === 6 ? ' nachbetreuung-einstieg__col--single' : ''}`}>
+                    <div className="nachbetreuung-einstieg__col-head">
+                      {appVariant === 6 ? ' ' : 'Anbieterkontakt'}
+                    </div>
                     <div className="nachbetreuung-einstieg__col-body">
-                      {appVariant === 3 ? (
+                      {appVariant === 6 ? (
+                        <span className="nachbetreuung-einstieg__empty">Bisher keine Weiterleitung erfolgt</span>
+                      ) : istWieVariante3 ? (
                         <span className="nachbetreuung-einstieg__empty">Nichts</span>
                       ) : (
                         <>
@@ -2110,16 +2118,18 @@ const AnfrageSitzlift: React.FC = () => {
                       )}
                     </div>
                   </div>
-                  <div className="nachbetreuung-einstieg__col">
-                    <div className="nachbetreuung-einstieg__col-head">Informationsbroschüren</div>
-                    <div className="nachbetreuung-einstieg__col-body">
-                      {appVariant === 3 ? (
-                        <span className="nachbetreuung-einstieg__broschuere-gruen">Barrierefreies Zuhause</span>
-                      ) : (
-                        <span className="nachbetreuung-einstieg__empty">Nichts</span>
-                      )}
+                  {appVariant !== 6 && (
+                    <div className="nachbetreuung-einstieg__col">
+                      <div className="nachbetreuung-einstieg__col-head">Informationsbroschüren</div>
+                      <div className="nachbetreuung-einstieg__col-body">
+                        {appVariant === 3 || appVariant === 5 ? (
+                          <span className="nachbetreuung-einstieg__broschuere-gruen">Barrierefreies Zuhause</span>
+                        ) : (
+                          <span className="nachbetreuung-einstieg__empty">Nichts</span>
+                        )}
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               </div>
             ) : (
