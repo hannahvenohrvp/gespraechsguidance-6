@@ -1077,6 +1077,10 @@ const AnfrageSitzlift: React.FC = () => {
   const weiterleitenV2EmailStreckeSichtbar =
     weiterleitenZeigtTools && keineBroschuereAusgewaehlt;
 
+  // Wenn „Kein akuter Bedarf“ oder „Kontakt-Präferenzen“ gewählt ist (= keine grüne Broschüre),
+  // reduziert sich die Bonus-Berechtigung → roter Hinweis über „Abschicken“
+  const weiterleitenBonusHinweisSichtbar = weiterleitenV2EmailStreckeSichtbar;
+
   const weiterleitenV2V3NachgespraechZustimmungErforderlich =
     weiterleitenV2EmailStreckeSichtbar
       ? false
@@ -1922,13 +1926,13 @@ const AnfrageSitzlift: React.FC = () => {
                           {weiterleitenV2EmailStreckeSichtbar && (
                             <div className="weiterleiten-anbieter-card selected weiterleiten-tool-card weiterleiten-kontakt-praeferenzen-box">
                               <div className="anbieter-head">
-                                <span className="anbieter-name">Kein akuter Bedarf:<br />E-Mail-Strecke</span>
+                                <span className="anbieter-name">Kein akuter Bedarf</span>
                                 <button
                                   type="button"
                                   className={`anbieter-check${weiterleitenV3Tools.kontaktPraeferenzenChecked ? ' anbieter-check--unchecked' : ''}`}
                                   onClick={selectWeiterleitenV3EmailStrecke}
                                   aria-pressed={!weiterleitenV3Tools.kontaktPraeferenzenChecked}
-                                  aria-label="Kein akuter Bedarf: E-Mail-Strecke auswählen"
+                                  aria-label="Kein akuter Bedarf auswählen"
                                 >
                                   {weiterleitenV3Tools.kontaktPraeferenzenChecked ? '' : '✓'}
                                 </button>
@@ -2056,6 +2060,11 @@ const AnfrageSitzlift: React.FC = () => {
                         {weiterleitenPopupVersion === 1 && (
                           <div className="weiterleiten-note">
                             Super - die umsatzstärkste Anbieterauswahl wurde ausgewählt!
+                          </div>
+                        )}
+                        {weiterleitenBonusHinweisSichtbar && (
+                          <div className="weiterleiten-bonus-hinweis" role="alert">
+                            Hinweis: Deine Bonus-Berechtigung reduziert sich.
                           </div>
                         )}
                         <div className="weiterleiten-actions">

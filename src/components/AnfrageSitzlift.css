@@ -4551,6 +4551,18 @@ button.anbieter-check {
   max-width: 320px;
 }
 
+/* Roter Hinweis über „Abschicken“, wenn „Kein akuter Bedarf“ / „Kontakt-Präferenzen“ gewählt ist */
+.weiterleiten-bonus-hinweis {
+  margin-bottom: 8px;
+  padding: 8px 12px;
+  background: #fde8e8;
+  border: 1px solid #e11d48;
+  border-radius: 6px;
+  color: #b91c1c;
+  font-size: 13px;
+  font-weight: 600;
+}
+
 .nachbetreuung-einstieg__col-head {
   padding: 8px 12px;
   background: #9e9e9e;
