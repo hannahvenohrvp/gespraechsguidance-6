@@ -1062,12 +1062,9 @@ const AnfrageSitzlift: React.FC = () => {
     });
   }, [isWeiterleitenModalOpen, weiterleitenPopupVersion, appVariant]);
 
-  // Popup-Variante 4 nur in App-Variante 2 & 3, Popup-Variante 3 nicht in App-Variante 1 – sonst auf 1 zurücksetzen
+  // Popup-Variante 4 gibt es nur in App-Variante 2–6 (nicht in 1) – sonst auf 1 zurücksetzen
   useEffect(() => {
     if (appVariant === 1 && weiterleitenPopupVersion === 4) {
-      setWeiterleitenPopupVersion(1);
-    }
-    if (appVariant === 1 && weiterleitenPopupVersion === 3) {
       setWeiterleitenPopupVersion(1);
     }
   }, [appVariant, weiterleitenPopupVersion]);
@@ -1769,15 +1766,13 @@ const AnfrageSitzlift: React.FC = () => {
                           >
                             2
                           </button>
-                          {appVariant !== 1 && (
-                            <button
-                              type="button"
-                              className={weiterleitenPopupVersion === 3 ? 'is-active' : ''}
-                              onClick={() => setWeiterleitenPopupVersion(3)}
-                            >
-                              3
-                            </button>
-                          )}
+                          <button
+                            type="button"
+                            className={weiterleitenPopupVersion === 3 ? 'is-active' : ''}
+                            onClick={() => setWeiterleitenPopupVersion(3)}
+                          >
+                            3
+                          </button>
                           {appVariant !== 1 && (
                             <button
                               type="button"
@@ -1973,13 +1968,13 @@ const AnfrageSitzlift: React.FC = () => {
                           {weiterleitenV2EmailStreckeSichtbar && (
                             <div className="weiterleiten-anbieter-card selected weiterleiten-tool-card weiterleiten-v3-kontakt-praeferenzen-kachel">
                               <div className="anbieter-head">
-                                <span className="anbieter-name">Kontakt-Präferenzen</span>
+                                <span className="anbieter-name">Kontakt-Einstellungen</span>
                                 <button
                                   type="button"
                                   className={`anbieter-check${weiterleitenV3Tools.kontaktPraeferenzenChecked ? '' : ' anbieter-check--unchecked'}`}
                                   onClick={toggleWeiterleitenV3KontaktPraeferenzen}
                                   aria-pressed={weiterleitenV3Tools.kontaktPraeferenzenChecked}
-                                  aria-label="Kontakt-Präferenzen in die E-Mail-Auswahl aufnehmen"
+                                  aria-label="Kontakt-Einstellungen in die E-Mail-Auswahl aufnehmen"
                                 >
                                   {weiterleitenV3Tools.kontaktPraeferenzenChecked ? '✓' : ''}
                                 </button>
