@@ -1009,6 +1009,10 @@ const AnfrageSitzlift: React.FC = () => {
   const [phoneValidationError, setPhoneValidationError] = useState('');
   const nextPhoneIdRef = useRef(2);
 
+  // App-Variante 3/5/6 + Popup-Variante 2: NUR „Zuschüsse & Vorsorge“ angezeigt & vorausgewählt,
+  // „Weitere“ klappt die restlichen Broschüren auf.
+  const istV3Popup2 = istWieVariante3 && weiterleitenPopupVersion === 2;
+
   useEffect(() => {
     if (!isWeiterleitenModalOpen || weiterleitenPopupVersion === 1) {
       return;
@@ -1026,6 +1030,19 @@ const AnfrageSitzlift: React.FC = () => {
         hilfsmittelMobilitaetChecked: false,
         zuschuesseVorsorgeChecked: false,
         showMoreTools: true,
+      });
+      return;
+    }
+
+    // App-Variante 3/5/6 + Popup-Variante 2 → NUR „Zuschüsse & Vorsorge“ vorausgewählt, „Weitere“ eingeklappt.
+    if (istV3Popup2) {
+      setWeiterleitenV3Tools({
+        pflegegradChecked: false,
+        kontaktPraeferenzenChecked: false,
+        pflegeWohnenChecked: false,
+        hilfsmittelMobilitaetChecked: false,
+        zuschuesseVorsorgeChecked: true,
+        showMoreTools: false,
       });
       return;
     }
@@ -1053,10 +1070,6 @@ const AnfrageSitzlift: React.FC = () => {
     if (appVariant === 1 && weiterleitenPopupVersion === 3) {
       setWeiterleitenPopupVersion(1);
     }
-    // Popup-Variante 2 gibt es in App-Variante 3/5/6 nicht
-    if (istWieVariante3 && weiterleitenPopupVersion === 2) {
-      setWeiterleitenPopupVersion(1);
-    }
   }, [appVariant, weiterleitenPopupVersion]);
 
   // Popup-Varianten 2/3/4 zeigen die interaktiven Broschüren-Kacheln (statt der Sitzlift-Anbieter)
@@ -1081,13 +1094,10 @@ const AnfrageSitzlift: React.FC = () => {
   // reduziert sich die Bonus-Berechtigung → roter Hinweis über „Abschicken“
   const weiterleitenBonusHinweisSichtbar = weiterleitenV2EmailStreckeSichtbar;
 
+  // Nachgespräch-Zustimmung ist immer Pflicht vor dem Weiterleiten –
+  // außer wenn „Kein akuter Bedarf“ / „Kontakt-Präferenzen“ gewählt ist (= keine grüne Broschüre).
   const weiterleitenV2V3NachgespraechZustimmungErforderlich =
-    weiterleitenV2EmailStreckeSichtbar
-      ? false
-      : weiterleitenPopupVersion === 3
-        ? true
-        : weiterleitenZeigtTools &&
-          weiterleitenV3Tools.pflegegradChecked;
+    !weiterleitenV2EmailStreckeSichtbar;
 
   const weiterleitenAbschickenEnabled =
     weiterleitenPopupVersion === 1
@@ -1754,13 +1764,8 @@ const AnfrageSitzlift: React.FC = () => {
                           </button>
                           <button
                             type="button"
-                            className={`${weiterleitenPopupVersion === 2 ? 'is-active' : ''}${istWieVariante3 ? ' is-disabled' : ''}`}
-                            onClick={() => {
-                              if (!istWieVariante3) setWeiterleitenPopupVersion(2);
-                            }}
-                            aria-disabled={istWieVariante3}
-                            aria-label={istWieVariante3 ? 'Variante 2 – Diesen Fall gibt es nun nicht.' : undefined}
-                            data-tooltip={istWieVariante3 ? 'Diesen Fall gibt es nun nicht.' : undefined}
+                            className={weiterleitenPopupVersion === 2 ? 'is-active' : ''}
+                            onClick={() => setWeiterleitenPopupVersion(2)}
                           >
                             2
                           </button>
@@ -1829,6 +1834,23 @@ const AnfrageSitzlift: React.FC = () => {
                             <span className="weiterleiten-tools-heading">Informationsbroschüre</span>
                             <p className="weiterleiten-tools-subhint">Wird dem Klienten via E-Mail zugesendet.</p>
                           </div>
+                          {istV3Popup2 && (
+                            <div className="weiterleiten-anbieter-card selected weiterleiten-tool-card">
+                              <div className="anbieter-head">
+                                <span className="anbieter-name">Zuschüsse & Vorsorge</span>
+                                <button
+                                  type="button"
+                                  className={`anbieter-check${weiterleitenV3Tools.zuschuesseVorsorgeChecked ? '' : ' anbieter-check--unchecked'}`}
+                                  onClick={toggleWeiterleitenV3ZuschuesseVorsorge}
+                                  aria-pressed={weiterleitenV3Tools.zuschuesseVorsorgeChecked}
+                                  aria-label="Zuschüsse & Vorsorge in die E-Mail-Auswahl aufnehmen"
+                                >
+                                  {weiterleitenV3Tools.zuschuesseVorsorgeChecked ? '✓' : ''}
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                          {(!istV3Popup2 || weiterleitenV3Tools.showMoreTools) && (
                           <div className="weiterleiten-anbieter-card selected weiterleiten-tool-card">
                             <div className="anbieter-head">
                               <span className="anbieter-name">Barrierefreies Zuhause</span>
@@ -1847,7 +1869,8 @@ const AnfrageSitzlift: React.FC = () => {
                               )}
                             </div>
                           </div>
-                          {appVariant !== 1 && (
+                          )}
+                          {appVariant !== 1 && !istV3Popup2 && (
                             <div className="weiterleiten-anbieter-card selected weiterleiten-tool-card">
                               <div className="anbieter-head">
                                 <span className="anbieter-name">Hilfsmittel & Mobilität</span>
@@ -1891,7 +1914,7 @@ const AnfrageSitzlift: React.FC = () => {
                                   </button>
                                 </div>
                               </div>
-                              {appVariant === 1 && (
+                              {(appVariant === 1 || istV3Popup2) && (
                               <div className="weiterleiten-anbieter-card selected weiterleiten-tool-card">
                                 <div className="anbieter-head">
                                   <span className="anbieter-name">Hilfsmittel & Mobilität</span>
@@ -1907,6 +1930,7 @@ const AnfrageSitzlift: React.FC = () => {
                                 </div>
                               </div>
                               )}
+                              {!istV3Popup2 && (
                               <div className="weiterleiten-anbieter-card selected weiterleiten-tool-card">
                                 <div className="anbieter-head">
                                   <span className="anbieter-name">Zuschüsse & Vorsorge</span>
@@ -1921,7 +1945,14 @@ const AnfrageSitzlift: React.FC = () => {
                                   </button>
                                 </div>
                               </div>
+                              )}
                             </>
+                          )}
+                          {weiterleitenV2EmailStreckeSichtbar && (
+                            <div className="weiterleiten-column-title weiterleiten-column-title--tools weiterleiten-column-title--sonstiges">
+                              <span className="weiterleiten-tools-heading">Sonstiges</span>
+                              <p className="weiterleiten-tools-subhint">Dem Klienten wird eine E-Mail zugesendet.</p>
+                            </div>
                           )}
                           {weiterleitenV2EmailStreckeSichtbar && (
                             <div className="weiterleiten-anbieter-card selected weiterleiten-tool-card weiterleiten-kontakt-praeferenzen-box">
@@ -2064,7 +2095,12 @@ const AnfrageSitzlift: React.FC = () => {
                         )}
                         {weiterleitenBonusHinweisSichtbar && (
                           <div className="weiterleiten-bonus-hinweis" role="alert">
-                            Hinweis: Deine Bonus-Berechtigung reduziert sich.
+                            Hinweis: Deine Erfolgsquote sinkt!
+                          </div>
+                        )}
+                        {weiterleitenPopupVersion !== 1 && !weiterleitenBonusHinweisSichtbar && (
+                          <div className="weiterleiten-erfolg-hinweis">
+                            Deine Erfolgsquote steigt!
                           </div>
                         )}
                         <div className="weiterleiten-actions">

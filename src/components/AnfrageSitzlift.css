@@ -3323,27 +3323,38 @@
   border-top: 1px solid #b0b6bd;
 }
 
-/* V2/V3 (nur Tools-Zeile): alle Kacheln in einer Zeile, Titel fest, Karten teilen sich den Rest */
+/* V2/V3/V4 (nur Tools-Zeile): gleiches Spaltenraster wie sonst. Dadurch sind alle Boxen gleich breit
+   und „Kein akuter Bedarf“ + „Kontakt-Präferenzen“ landen in einer neuen Zeile direkt unter den grünen Boxen. */
 .weiterleiten-grid--ohne-sitzlift-zeile {
-  display: flex;
-  flex-wrap: nowrap;
+  display: grid;
+  grid-template-columns: 190px repeat(4, 1fr);
   align-items: stretch;
 }
 
-.weiterleiten-grid--ohne-sitzlift-zeile > .weiterleiten-column-title {
-  flex: 0 0 190px;
+/* „Kein akuter Bedarf“ unter die 1. grüne Box (Spalte 2), „Kontakt-Präferenzen“ unter die 2. (Spalte 3) */
+.weiterleiten-grid--ohne-sitzlift-zeile > .weiterleiten-kontakt-praeferenzen-box {
+  grid-column: 2;
 }
 
-.weiterleiten-grid--ohne-sitzlift-zeile > .weiterleiten-anbieter-card {
-  flex: 1 1 0;
-  min-width: 0;
-  /* Kachel nicht über die ganze Breite strecken (z. B. wenn nur „Barrierefreies Zuhause“ sichtbar ist) */
-  max-width: 300px;
+.weiterleiten-grid--ohne-sitzlift-zeile > .weiterleiten-v3-kontakt-praeferenzen-kachel {
+  grid-column: 3;
 }
 
-/* „Weitere“-Schaltfläche nur so breit wie nötig (spart Platz) */
-.weiterleiten-grid--ohne-sitzlift-zeile > .weiterleiten-weitere-card {
-  flex: 0 0 auto;
+/* „Sonstiges“ als Titel der zweiten Zeile (unter „Informationsbroschüre“, Spalte 1) */
+.weiterleiten-column-title--sonstiges {
+  grid-column: 1;
+}
+
+/* Trennlinie zwischen den Zeilen (über den Kacheln der zweiten Zeile) */
+.weiterleiten-grid--ohne-sitzlift-zeile > .weiterleiten-kontakt-praeferenzen-box,
+.weiterleiten-grid--ohne-sitzlift-zeile > .weiterleiten-v3-kontakt-praeferenzen-kachel,
+.weiterleiten-grid--ohne-sitzlift-zeile > .weiterleiten-column-title--sonstiges {
+  border-top: 1px solid #b0b6bd;
+}
+
+/* (im Grid nicht mehr benötigt) */
+.weiterleiten-grid-break {
+  display: none;
 }
 
 .weiterleiten-column-title {
@@ -4551,16 +4562,25 @@ button.anbieter-check {
   max-width: 320px;
 }
 
-/* Roter Hinweis über „Abschicken“, wenn „Kein akuter Bedarf“ / „Kontakt-Präferenzen“ gewählt ist */
-.weiterleiten-bonus-hinweis {
-  margin-bottom: 8px;
-  padding: 8px 12px;
-  background: #fde8e8;
-  border: 1px solid #e11d48;
-  border-radius: 6px;
-  color: #b91c1c;
-  font-size: 13px;
+/* Hinweise zur Erfolgsquote – schlicht wie „weiterleiten-note“, nur farbiger Text (rot/grün), ohne Rahmen */
+.weiterleiten-bonus-hinweis,
+.weiterleiten-erfolg-hinweis {
+  font-size: 12px;
   font-weight: 600;
+  line-height: 1.35;
+}
+
+.weiterleiten-footer--stacked .weiterleiten-bonus-hinweis,
+.weiterleiten-footer--stacked .weiterleiten-erfolg-hinweis {
+  text-align: right;
+}
+
+.weiterleiten-bonus-hinweis {
+  color: #c62828;
+}
+
+.weiterleiten-erfolg-hinweis {
+  color: #228b22;
 }
 
 .nachbetreuung-einstieg__col-head {
