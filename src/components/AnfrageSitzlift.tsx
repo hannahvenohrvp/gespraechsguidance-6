@@ -1062,12 +1062,6 @@ const AnfrageSitzlift: React.FC = () => {
     });
   }, [isWeiterleitenModalOpen, weiterleitenPopupVersion, appVariant]);
 
-  // Popup-Variante 4 gibt es nur in App-Variante 2–6 (nicht in 1) – sonst auf 1 zurücksetzen
-  useEffect(() => {
-    if (appVariant === 1 && weiterleitenPopupVersion === 4) {
-      setWeiterleitenPopupVersion(1);
-    }
-  }, [appVariant, weiterleitenPopupVersion]);
 
   // Popup-Varianten 2/3/4 zeigen die interaktiven Broschüren-Kacheln (statt der Sitzlift-Anbieter)
   const weiterleitenZeigtTools =
@@ -1091,10 +1085,23 @@ const AnfrageSitzlift: React.FC = () => {
   // reduziert sich die Bonus-Berechtigung → roter Hinweis über „Abschicken“
   const weiterleitenBonusHinweisSichtbar = weiterleitenV2EmailStreckeSichtbar;
 
-  // Nachgespräch-Zustimmung ist immer Pflicht vor dem Weiterleiten –
-  // außer wenn „Kein akuter Bedarf“ / „Kontakt-Präferenzen“ gewählt ist (= keine grüne Broschüre).
+  // Sonderfälle App-Variante 1 bei „Kein akuter Bedarf“:
+  //  · Popup-3 → Nachgespräch-Zustimmung zusätzlich angezeigt, aber OPTIONAL.
+  //  · Popup-4 → Nachgespräch-Zustimmung zusätzlich angezeigt und PFLICHT.
+  //  · „Kontakt-Einstellungen“ gewählt → Nachgespräch-Zustimmung bleibt ausgeblendet.
+  const istV1Popup3 = appVariant === 1 && weiterleitenPopupVersion === 3;
+  const istV1Popup4 = appVariant === 1 && weiterleitenPopupVersion === 4;
+  const keinAkuterBedarfGewaehlt =
+    weiterleitenV2EmailStreckeSichtbar && !weiterleitenV3Tools.kontaktPraeferenzenChecked;
+
+  // Nachgespräch-Zustimmung ist immer Pflicht vor dem Weiterleiten – außer wenn „Kein akuter Bedarf“ /
+  // „Kontakt-Einstellungen“ gewählt ist. Ausnahme: App-Variante 1 + Popup-4 → bei „Kein akuter Bedarf“ Pflicht.
   const weiterleitenV2V3NachgespraechZustimmungErforderlich =
-    !weiterleitenV2EmailStreckeSichtbar;
+    !weiterleitenV2EmailStreckeSichtbar || (istV1Popup4 && keinAkuterBedarfGewaehlt);
+
+  const nachgespraechConsentSichtbar =
+    !weiterleitenV2EmailStreckeSichtbar ||
+    ((istV1Popup3 || istV1Popup4) && keinAkuterBedarfGewaehlt);
 
   const weiterleitenAbschickenEnabled =
     weiterleitenPopupVersion === 1
@@ -1773,15 +1780,13 @@ const AnfrageSitzlift: React.FC = () => {
                           >
                             3
                           </button>
-                          {appVariant !== 1 && (
-                            <button
-                              type="button"
-                              className={weiterleitenPopupVersion === 4 ? 'is-active' : ''}
-                              onClick={() => setWeiterleitenPopupVersion(4)}
-                            >
-                              4
-                            </button>
-                          )}
+                          <button
+                            type="button"
+                            className={weiterleitenPopupVersion === 4 ? 'is-active' : ''}
+                            onClick={() => setWeiterleitenPopupVersion(4)}
+                          >
+                            4
+                          </button>
                         </div>
                       </div>
                     </div>
@@ -2034,7 +2039,7 @@ const AnfrageSitzlift: React.FC = () => {
                         </div>
                       )}
                       {(weiterleitenPopupVersion === 1 ||
-                        !weiterleitenV2EmailStreckeSichtbar) && (
+                        nachgespraechConsentSichtbar) && (
                         <div className="weiterleiten-klient-zustimmung">
                           {weiterleitenPopupVersion === 1 && (
                             <label className={`weiterleiten-consent ${!zustimmungKontaktweitergabe ? 'weiterleiten-option-unchecked' : ''}`}>
@@ -2046,7 +2051,7 @@ const AnfrageSitzlift: React.FC = () => {
                               Die genannten Anbieter werden Sie in den kommenden Tagen kontaktieren.
                             </label>
                           )}
-                          {!weiterleitenV2EmailStreckeSichtbar && (
+                          {nachgespraechConsentSichtbar && (
                             <label
                               className={`weiterleiten-consent ${!zustimmungNachgespraechBeratung ? 'weiterleiten-option-unchecked' : ''}${weiterleitenZeigtTools && !weiterleitenV2V3NachgespraechZustimmungErforderlich ? ' weiterleiten-consent--optional' : ''}`}
                             >
