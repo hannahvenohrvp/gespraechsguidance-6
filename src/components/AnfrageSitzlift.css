@@ -1369,6 +1369,15 @@
   z-index: 3;
 }
 
+/* Gesperrt, solange nicht alle Produktkriterien angehakt sind */
+.content-header .header-actions-group > .btn-header-cta:disabled {
+  background-color: #a5d6a7;
+  border-color: #a5d6a7 !important;
+  color: #eef7ee;
+  cursor: not-allowed;
+  opacity: 1;
+}
+
 /* V2: Bewertung weg – nur „Speichern und weiter“, kein sichtbarer Platzhalter */
 .content-header .header-actions-group--bewertung-collapsed {
   box-shadow: none;
@@ -2481,6 +2490,18 @@
   border: none;
   border-top: none;
   overflow: hidden;
+}
+
+/* Kein Produkt geöffnet → Inhaltsbereich ausblenden + Platzhalter */
+.produkt-inhalt-bereich--hidden {
+  display: none;
+}
+
+.produkt-inhalt-leer {
+  padding: 16px 12px;
+  color: #757575;
+  font-size: 13px;
+  font-style: italic;
 }
 
 .produkt-inhalt-label {

@@ -1333,11 +1333,11 @@ const AnfrageSitzlift: React.FC = () => {
   };
 
   const removeProduktTab = (id: string) => {
-    if (produktTabs.length <= 1) return;
     setProduktTabs((prev) => prev.filter((tab) => tab.id !== id));
     if (activeProduktTabId === id) {
       const remaining = produktTabs.filter((tab) => tab.id !== id);
-      setActiveProduktTabId(remaining[0]?.id ?? 'sitzlift');
+      // Kein Produkt mehr offen, wenn der letzte Reiter geschlossen wird
+      setActiveProduktTabId(remaining[0]?.id ?? '');
     }
   };
 
@@ -1362,24 +1362,47 @@ const AnfrageSitzlift: React.FC = () => {
     vorOrtTermin: string[];
     bedarfSitzlift: string;
   }>({
-    einverstaendnisSenior: '',
-    pflegegradSitzlift: '',
-    hausart: '',
-    immobilie: '',
-    einverstaendnisVermieter: '',
-    treppenform: '',
-    etagen: '',
+    // Standardmäßig alle Sitzlift-Produktkriterien angehakt/ausgefüllt
+    einverstaendnisSenior: 'vorhanden',
+    pflegegradSitzlift: 'vorhanden',
+    hausart: 'einfamilienhaus',
+    immobilie: 'eigentum',
+    einverstaendnisVermieter: 'vorhanden',
+    treppenform: 'gerade_innen',
+    etagen: '1',
     treppenbreite: '110',
     koerpergewicht: '60',
-    zustand: [],
+    zustand: ['neu'],
     budgetrahmen: '12000',
-    vorOrtTermin: [],
-    bedarfSitzlift: '',
+    vorOrtTermin: ['vormittags'],
+    bedarfSitzlift: 'schnell',
   });
 
   const handleSitzliftKriterienChange = (name: string, value: string | string[]) => {
     setSitzliftKriterien((prev) => ({ ...prev, [name]: value }));
   };
+
+  // Sind alle Sitzlift-Produktkriterien angehakt/ausgefüllt?
+  const sitzliftKriterienVollstaendig =
+    sitzliftKriterien.einverstaendnisSenior !== '' &&
+    sitzliftKriterien.pflegegradSitzlift !== '' &&
+    sitzliftKriterien.hausart !== '' &&
+    sitzliftKriterien.immobilie !== '' &&
+    sitzliftKriterien.einverstaendnisVermieter !== '' &&
+    sitzliftKriterien.treppenform !== '' &&
+    sitzliftKriterien.etagen !== '' &&
+    sitzliftKriterien.treppenbreite.trim() !== '' &&
+    sitzliftKriterien.koerpergewicht.trim() !== '' &&
+    sitzliftKriterien.zustand.length > 0 &&
+    sitzliftKriterien.budgetrahmen.trim() !== '' &&
+    sitzliftKriterien.vorOrtTermin.length > 0 &&
+    sitzliftKriterien.bedarfSitzlift !== '';
+
+  // „Anfrage abschließen“ ist gesperrt, sobald ein ausgewähltes Produkt nicht alle Produktkriterien
+  // angehakt hat. (Aktuell sind nur die Sitzlift-Kriterien zustandsbasiert prüfbar.)
+  const alleProduktKriterienVollstaendig = produktTabs.every((tab) =>
+    tab.id === 'sitzlift' || tab.label === 'Sitzlift' ? sitzliftKriterienVollstaendig : true
+  );
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;
@@ -2277,6 +2300,12 @@ const AnfrageSitzlift: React.FC = () => {
                 type="button"
                 className="btn-green btn-header-cta header-btn-emphasis"
                 onClick={() => setIsWeiterleitenModalOpen(true)}
+                disabled={!alleProduktKriterienVollstaendig}
+                title={
+                  !alleProduktKriterienVollstaendig
+                    ? 'Bitte zuerst alle Produktkriterien der ausgewählten Produkte anhaken.'
+                    : undefined
+                }
               >
                 <span className="icon" aria-hidden="true">
                   ✓
@@ -2669,18 +2698,16 @@ const AnfrageSitzlift: React.FC = () => {
                       <span className="produkt-reiter-label">
                         {tab.label} ({tab.count} von {tab.maxAN} AN)
                       </span>
-                      {produktTabs.length > 1 && (
-                        <span
-                          className="produkt-reiter-remove"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            removeProduktTab(tab.id);
-                          }}
-                          aria-label="Reiter entfernen"
-                        >
-                          ×
-                        </span>
-                      )}
+                      <span
+                        className="produkt-reiter-remove"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          removeProduktTab(tab.id);
+                        }}
+                        aria-label="Reiter entfernen"
+                      >
+                        ×
+                      </span>
                     </button>
                   ))}
                   <div className="produkt-reiter-dropdown-wrap">
@@ -2714,7 +2741,12 @@ const AnfrageSitzlift: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="produkt-inhalt-bereich">
+                {!activeProduktTabId && (
+                  <div className="produkt-inhalt-leer">
+                    Kein Produkt geöffnet. Über die Auswahl oben ein Produkt hinzufügen.
+                  </div>
+                )}
+                <div className={`produkt-inhalt-bereich${!activeProduktTabId ? ' produkt-inhalt-bereich--hidden' : ''}`}>
                   <div className="produkt-tab-content">
                     {/* Oben: Postleitzahl und Region (beziehen sich auf das ausgewählte Produkt) */}
                     <div className="form-row">
