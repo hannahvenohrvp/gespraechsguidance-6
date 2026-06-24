@@ -2071,7 +2071,7 @@ const AnfrageSitzlift: React.FC = () => {
                                 checked={zustimmungKontaktweitergabe}
                                 onChange={(e) => setZustimmungKontaktweitergabe(e.target.checked)}
                               />
-                              Die genannten Anbieter werden Sie in den kommenden Tagen kontaktieren.
+                              Wir geben Ihre Kontaktinformationen an die genannten Anbieter weiter und diese melden sich telefonisch bei Ihnen.
                             </label>
                           )}
                           {nachgespraechConsentSichtbar && (
@@ -2087,8 +2087,7 @@ const AnfrageSitzlift: React.FC = () => {
                                   (weiterleitenZeigtTools && weiterleitenV2V3NachgespraechZustimmungErforderlich)
                                 }
                               />
-                              Wir werden uns per E-Mail bei Ihnen melden und in den nächsten Wochen ein Nachgespräch sowie eine weitere
-                              Beratung anbieten.
+                              Wir werden uns in Zukunft wieder bei Ihnen melden (schriftlich & telefonisch).
                             </label>
                           )}
                         </div>
