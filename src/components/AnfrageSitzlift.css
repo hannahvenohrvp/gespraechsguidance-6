@@ -4001,6 +4001,50 @@ button.anbieter-check {
   border-radius: 4px;
 }
 
+/* Kontakt-Einstellungen Modal (kombiniert, aus dem Aktionen-Menü) */
+.kontakt-einstellungen-modal {
+  max-height: calc(100vh - 64px);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.kontakt-einstellungen-modal .einstellungen-modal-kopfzeile {
+  position: sticky;
+  top: -20px;
+  z-index: 2;
+  margin: -20px -24px 6px;
+  padding: 20px 24px 10px;
+  background: #fff;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.kontakt-einstellungen-section-title {
+  margin: 26px 0 10px;
+  font-size: 15px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.kontakt-einstellungen-modal .einstellungen-status-kopf {
+  border-bottom: none;
+  padding-bottom: 0;
+  margin-bottom: 0;
+}
+
+.kontakt-einstellungen-modal .klient-loeschen-admin-hinweise {
+  margin-bottom: 0;
+}
+
+.kontakt-einstellungen-modal .klient-loeschen-actions {
+  position: sticky;
+  bottom: -24px;
+  z-index: 2;
+  margin: 0 -24px -24px;
+  padding: 14px 24px;
+  background: #fff;
+  border-top: 1px solid #e5e7eb;
+}
+
 @media (max-width: 640px) {
   .klient-loeschen-row {
     grid-template-columns: 1fr;

@@ -949,6 +949,13 @@ const AnfrageSitzlift: React.FC = () => {
   const [klientLoeschenDemoModus, setKlientLoeschenDemoModus] = useState<'berater' | 'admin'>('berater');
   const [klientLoeschenAdminKlientBestaetigt, setKlientLoeschenAdminKlientBestaetigt] = useState(false);
   const [klientLoeschenAdminDuplikatBestaetigt, setKlientLoeschenAdminDuplikatBestaetigt] = useState(false);
+  /** Kombiniertes „Kontakt-Einstellungen“-Modal (aus dem Aktionen-Menü) */
+  const [isKontaktEinstellungenModalOpen, setIsKontaktEinstellungenModalOpen] = useState(false);
+  const [kontaktLoeschenKlientBestaetigt, setKontaktLoeschenKlientBestaetigt] = useState(false);
+  const [kontaktLoeschenDubletteBestaetigt, setKontaktLoeschenDubletteBestaetigt] = useState(false);
+  const [kontaktTelefonieAbmeldenBestaetigt, setKontaktTelefonieAbmeldenBestaetigt] = useState(false);
+  const [kontaktNewsletterAnmeldenBestaetigt, setKontaktNewsletterAnmeldenBestaetigt] = useState(false);
+  const [kontaktAutomationAbmeldenBestaetigt, setKontaktAutomationAbmeldenBestaetigt] = useState(false);
   const [isAnrufEinstellungenModalOpen, setIsAnrufEinstellungenModalOpen] = useState(false);
   /** Nur Demo/Preview: Ansicht im Anruf-Modal (Standard / Admin) */
   const [anrufDemoModus, setAnrufDemoModus] = useState<
@@ -2267,6 +2274,21 @@ const AnfrageSitzlift: React.FC = () => {
                         Adresse validieren
                       </button>
                     </div>
+                    <div className="aktionen-dropdown-divider" role="separator" />
+                    <div className="aktionen-dropdown-section" role="none">
+                      <button
+                        type="button"
+                        className="aktionen-dropdown-item"
+                        role="menuitem"
+                        onClick={() => {
+                          setIsAktionenDropdownOpen(false);
+                          setIsKontaktEinstellungenModalOpen(true);
+                        }}
+                      >
+                        <span className="aktionen-dropdown-icon" aria-hidden="true">⚙️</span>
+                        Kontakt-Einstellungen
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>
@@ -3343,6 +3365,203 @@ const AnfrageSitzlift: React.FC = () => {
                 type="button"
                 className="btn-orange klient-loeschen-action-btn"
                 onClick={() => setIsKlientLoeschenModalOpen(false)}
+              >
+                Schließen
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Kontakt-Einstellungen Modal (kombiniert, aus dem Aktionen-Menü) */}
+      {isKontaktEinstellungenModalOpen && (
+        <div className="modal-overlay" onClick={() => setIsKontaktEinstellungenModalOpen(false)}>
+          <div
+            className="modal-content klient-loeschen-modal kontakt-einstellungen-modal"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="einstellungen-modal-kopfzeile">
+              <h2 className="klient-loeschen-title einstellungen-modal-title">Kontakt-Einstellungen</h2>
+            </div>
+
+            <div className="klient-loeschen-sections">
+              <div className="klient-loeschen-row">
+                <div className="klient-loeschen-row-label">Kontakt-Einstellungen anpassen:</div>
+                <div className="klient-loeschen-row-body">
+                  Der Klient kann seine <strong>Kontakt-Einstellungen</strong> über eine <strong>Landingpage</strong>{' '}
+                  anpassen. Bitte E-Mail mit Link zur Landingpage versenden.
+                </div>
+              </div>
+            </div>
+
+            <p className="klient-loeschen-hinweis">
+              <strong>Hinweis:</strong> Die Anfrage wird mit Versenden der E-Mail geschlossen.
+            </p>
+
+            {/* Löschen */}
+            <h3 className="kontakt-einstellungen-section-title">Löschen</h3>
+            <div className="klient-loeschen-admin-hinweise">
+              <div className="newsletter-admin-abmelden klient-loeschen-admin-block">
+                <p className="newsletter-admin-abmelden-text">
+                  <strong>Admin:</strong> Endgültige Löschung des Klienten und aller personenbezogenen Daten? Dem
+                  Klienten wird eine Löschbestätigung zugesendet.
+                </p>
+                <label className="newsletter-wahl-checkbox newsletter-admin-abmelden-checkbox">
+                  <input
+                    type="checkbox"
+                    checked={kontaktLoeschenKlientBestaetigt}
+                    onChange={(e) => setKontaktLoeschenKlientBestaetigt(e.target.checked)}
+                  />
+                  <span>Ich bestätige die endgültige Löschung dieses Klienten.</span>
+                </label>
+                <button
+                  type="button"
+                  className="btn-red klient-loeschen-action-btn"
+                  disabled={!kontaktLoeschenKlientBestaetigt}
+                  onClick={() => {
+                    showAppToast('email', 'Klient wurde gelöscht.', { instant: true });
+                    setIsKontaktEinstellungenModalOpen(false);
+                    setCrmMainView('dashboard');
+                  }}
+                >
+                  Klient löschen
+                </button>
+              </div>
+              <div className="newsletter-admin-abmelden klient-loeschen-admin-block klient-loeschen-admin-block--duplikat">
+                <p className="newsletter-admin-abmelden-text">
+                  <strong>Admin:</strong> Endgültige Löschung dieses mehrfach angelegten Klienten (Dublette)?
+                </p>
+                <label className="newsletter-wahl-checkbox newsletter-admin-abmelden-checkbox">
+                  <input
+                    type="checkbox"
+                    checked={kontaktLoeschenDubletteBestaetigt}
+                    onChange={(e) => setKontaktLoeschenDubletteBestaetigt(e.target.checked)}
+                  />
+                  <span>Ich bestätige die Löschung dieser Dublette.</span>
+                </label>
+                <button
+                  type="button"
+                  className="btn-blue klient-loeschen-action-btn"
+                  disabled={!kontaktLoeschenDubletteBestaetigt}
+                  onClick={() => {
+                    showAppToast('email', 'Dublette wurde gelöscht.', { instant: true });
+                    setIsKontaktEinstellungenModalOpen(false);
+                    setCrmMainView('dashboard');
+                  }}
+                >
+                  Dublette löschen
+                </button>
+              </div>
+            </div>
+
+            {/* Anruf-Einstellungen */}
+            <h3 className="kontakt-einstellungen-section-title">Anruf-Einstellungen</h3>
+            <p className="einstellungen-status-kopf">
+              Der Klient ist aktuell <strong>zur Telefonie angemeldet</strong> und wird angerufen.
+            </p>
+            <div className="newsletter-admin-abmelden klient-loeschen-admin-block">
+              <p className="newsletter-admin-abmelden-text">
+                <strong>Admin:</strong> Fordert der Klient von der Telefonie abgemeldet zu werden? Hinweis: Es werden
+                alle geplanten Nachbetreuungstermine für diesen Klienten gelöscht.
+              </p>
+              <label className="newsletter-wahl-checkbox newsletter-admin-abmelden-checkbox">
+                <input
+                  type="checkbox"
+                  checked={kontaktTelefonieAbmeldenBestaetigt}
+                  onChange={(e) => setKontaktTelefonieAbmeldenBestaetigt(e.target.checked)}
+                />
+                <span>Ich bestätige die Abmeldung des Klienten von der Telefonie.</span>
+              </label>
+              <button
+                type="button"
+                className="btn-blue klient-loeschen-action-btn"
+                disabled={!kontaktTelefonieAbmeldenBestaetigt}
+                onClick={() => {
+                  showAppToast('email', 'Klient wurde von der Telefonie abgemeldet.', { instant: true });
+                  setKontaktTelefonieAbmeldenBestaetigt(false);
+                }}
+              >
+                Klient abmelden
+              </button>
+            </div>
+
+            {/* Newsletter-Einstellungen */}
+            <h3 className="kontakt-einstellungen-section-title">Newsletter-Einstellungen</h3>
+            <p className="einstellungen-status-kopf">
+              Der Klient war <strong>noch nie zum Newsletter angemeldet</strong>.
+            </p>
+            <div className="newsletter-admin-newsletter-anmeldung klient-loeschen-admin-block">
+              <p className="newsletter-admin-newsletter-anmeldung-text">
+                <strong>Admin:</strong> Soll der Klient zum Newsletter angemeldet werden?
+              </p>
+              <label className="newsletter-wahl-checkbox newsletter-admin-newsletter-anmeldung-checkbox">
+                <input
+                  type="checkbox"
+                  checked={kontaktNewsletterAnmeldenBestaetigt}
+                  onChange={(e) => setKontaktNewsletterAnmeldenBestaetigt(e.target.checked)}
+                />
+                <span>Ich bestätige die Anmeldung des Klienten zum Newsletter.</span>
+              </label>
+              <button
+                type="button"
+                className="btn-green klient-loeschen-action-btn"
+                disabled={!kontaktNewsletterAnmeldenBestaetigt}
+                onClick={() => {
+                  showAppToast('email', 'Klient wurde zum Newsletter angemeldet.', { instant: true });
+                  setKontaktNewsletterAnmeldenBestaetigt(false);
+                }}
+              >
+                Klient anmelden
+              </button>
+            </div>
+
+            {/* Automation-Einstellungen */}
+            <h3 className="kontakt-einstellungen-section-title">Automation-Einstellungen</h3>
+            <p className="einstellungen-status-kopf">
+              Der Klient ist aktuell <strong>für Automations angemeldet</strong>.
+            </p>
+            <div className="newsletter-admin-abmelden klient-loeschen-admin-block">
+              <p className="newsletter-admin-abmelden-text">
+                <strong>Admin:</strong> Fordert der Klient von der Automation abgemeldet zu werden?
+              </p>
+              <label className="newsletter-wahl-checkbox newsletter-admin-abmelden-checkbox">
+                <input
+                  type="checkbox"
+                  checked={kontaktAutomationAbmeldenBestaetigt}
+                  onChange={(e) => setKontaktAutomationAbmeldenBestaetigt(e.target.checked)}
+                />
+                <span>Ich bestätige die Abmeldung des Klienten von Automations.</span>
+              </label>
+              <button
+                type="button"
+                className="btn-blue klient-loeschen-action-btn"
+                disabled={!kontaktAutomationAbmeldenBestaetigt}
+                onClick={() => {
+                  showAppToast('email', 'Klient wurde von Automations abgemeldet.', { instant: true });
+                  setKontaktAutomationAbmeldenBestaetigt(false);
+                }}
+              >
+                Klient abmelden
+              </button>
+            </div>
+
+            <div className="klient-loeschen-grund-line klient-loeschen-footer-line" aria-hidden="true" />
+
+            <div className="klient-loeschen-actions">
+              <button
+                type="button"
+                className="btn-blue klient-loeschen-action-btn"
+                onClick={() => {
+                  showAppToast('email');
+                  setIsKontaktEinstellungenModalOpen(false);
+                }}
+              >
+                E-Mail mit Link zur Landingpage versenden
+              </button>
+              <button
+                type="button"
+                className="btn-orange klient-loeschen-action-btn"
+                onClick={() => setIsKontaktEinstellungenModalOpen(false)}
               >
                 Schließen
               </button>
