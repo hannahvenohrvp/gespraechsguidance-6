@@ -998,6 +998,8 @@ const AnfrageSitzlift: React.FC = () => {
   const [erreichbarkeit, setErreichbarkeit] = useState({ ganztägig: false, vormittags: false, nachmittags: false, abends: false });
   const [zustimmungKontaktweitergabe, setZustimmungKontaktweitergabe] = useState(false);
   const [zustimmungNachgespraechBeratung, setZustimmungNachgespraechBeratung] = useState(false);
+  /** „Kein akuter Bedarf“: optionaler Haken, um den E-Mail-Versand zu deaktivieren */
+  const [keinBedarfEmailVersandDeaktiviert, setKeinBedarfEmailVersandDeaktiviert] = useState(false);
   const [weiterleitenPopupVersion, setWeiterleitenPopupVersion] = useState<1 | 2 | 3 | 4>(1);
   const [weiterleitenV3Tools, setWeiterleitenV3Tools] = useState({
     pflegegradChecked: true,
@@ -2098,6 +2100,16 @@ const AnfrageSitzlift: React.FC = () => {
                             </label>
                           )}
                         </div>
+                      )}
+                      {keinAkuterBedarfGewaehlt && (
+                        <label className="weiterleiten-consent weiterleiten-consent--email-deaktivieren">
+                          <input
+                            type="checkbox"
+                            checked={keinBedarfEmailVersandDeaktiviert}
+                            onChange={(e) => setKeinBedarfEmailVersandDeaktiviert(e.target.checked)}
+                          />
+                          E-Mail-Versand deaktivieren
+                        </label>
                       )}
                     </div>
 

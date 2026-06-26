@@ -3727,6 +3727,18 @@ button.anbieter-check {
   flex-shrink: 0;
 }
 
+/* „Kein akuter Bedarf“: optionaler Haken „E-Mail-Versand deaktivieren“ – immer rot */
+.weiterleiten-klient-block .weiterleiten-consent--email-deaktivieren {
+  color: #dc2626;
+  font-weight: 600;
+  font-size: 14px;
+  margin-top: 6px;
+}
+
+.weiterleiten-klient-block .weiterleiten-consent--email-deaktivieren input[type="checkbox"] {
+  accent-color: #dc2626;
+}
+
 .weiterleiten-bottom-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(220px, 270px);
