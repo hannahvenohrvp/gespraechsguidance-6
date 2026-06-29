@@ -2136,12 +2136,12 @@ const AnfrageSitzlift: React.FC = () => {
                         )}
                         {weiterleitenBonusHinweisSichtbar && (
                           <div className="weiterleiten-bonus-hinweis" role="alert">
-                            Hinweis: Deine Erfolgsquote sinkt!
+                            Deine Erfolgsquote sinkt.
                           </div>
                         )}
                         {weiterleitenPopupVersion !== 1 && !weiterleitenBonusHinweisSichtbar && (
                           <div className="weiterleiten-erfolg-hinweis">
-                            Deine Erfolgsquote steigt!
+                            Deine Erfolgsquote steigt.
                           </div>
                         )}
                         <div className="weiterleiten-actions">
