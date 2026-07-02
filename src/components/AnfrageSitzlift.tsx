@@ -900,36 +900,59 @@ const ANRUF_LANDING_WOCHENTAGE: { id: string; label: string }[] = [
   { id: 'so', label: 'So' },
 ];
 
+// Standardwerte des Formulars (dienen als Fallback, wenn nichts gespeichert ist)
+const DEFAULT_FORM_DATA = {
+  // Active section for guidance
+  activeGuidanceSection: 'klient',
+  // Klient/Interessent Felder (jetzt oben)
+  anrede: 'Frau',
+  akademGrad: '',
+  vorname: 'Hannah',
+  nachname: 'Venohr',
+  email: 'demo@test.de',
+  versichertennummer: '',
+  telefon: '',
+  internerKommentar: '',
+
+  // Senior Felder
+  beziehung: 'Mutter', // Single-Select
+  pflegegrad: 'Pflegegrad 3', // Single-Select
+  medizinischerHintergrund: ['Altersschwäche', 'Arthrose'] as string[], // Multiselect
+  erhoehungBeantragt: false,
+  mobilitaet: 'Eingeschränkt mobil', // Single-Select
+  barrierefreiheit: ['Treppenlift'] as string[], // Multiselect
+  wohnsituation: ['Eigene Wohnung'] as string[], // Multiselect
+  aktuelleVersorgung: ['Angehörige'] as string[], // Multiselect
+  seniorAnrede: 'Frau',
+  seniorAkademGrad: '',
+  seniorVorname: 'Erika',
+  seniorNachname: 'Venohr',
+  alter: '82',
+  postleitzahl: '65197',
+  region: 'Wiesbaden',
+};
+
+type FormDataShape = typeof DEFAULT_FORM_DATA;
+
+// localStorage-Schlüssel für die Persistenz der Eingaben
+const FORM_DATA_STORAGE_KEY = 'anfrageSitzlift.formData';
+const PHONE_NUMBERS_STORAGE_KEY = 'anfrageSitzlift.phoneNumbers';
+
+const DEFAULT_PHONE_NUMBERS = [
+  { id: 'phone-1', type: 'Mobil', number: '01512 3456789', countryCode: '+49' },
+];
+
 const AnfrageSitzlift: React.FC = () => {
-  const [formData, setFormData] = useState({
-    // Active section for guidance
-    activeGuidanceSection: 'klient',
-    // Klient/Interessent Felder (jetzt oben)
-    anrede: 'Frau',
-    akademGrad: '',
-    vorname: 'Hannah',
-    nachname: 'Venohr',
-    email: 'demo@test.de',
-    versichertennummer: '',
-    telefon: '',
-    internerKommentar: '',
-    
-    // Senior Felder
-    beziehung: '', // Single-Select
-    pflegegrad: '', // Single-Select
-    medizinischerHintergrund: [] as string[], // Multiselect
-    erhoehungBeantragt: false,
-    mobilitaet: '', // Single-Select
-    barrierefreiheit: [] as string[], // Multiselect
-    wohnsituation: [] as string[], // Multiselect
-    aktuelleVersorgung: [] as string[], // Multiselect
-    seniorAnrede: '',
-    seniorAkademGrad: '',
-    seniorVorname: '',
-    seniorNachname: '',
-    alter: '',
-    postleitzahl: '',
-    region: '',
+  const [formData, setFormData] = useState<FormDataShape>(() => {
+    try {
+      const saved = localStorage.getItem(FORM_DATA_STORAGE_KEY);
+      // Gespeicherte Werte über die Defaults legen, damit später ergänzte
+      // Felder weiterhin ihren Standardwert erhalten.
+      if (saved) return { ...DEFAULT_FORM_DATA, ...(JSON.parse(saved) as Partial<FormDataShape>) };
+    } catch {
+      /* Fehlerhafte/blockierte Speicherung ignorieren und Defaults nutzen */
+    }
+    return DEFAULT_FORM_DATA;
   });
 
   // Telefonnummern-Management
@@ -939,9 +962,36 @@ const AnfrageSitzlift: React.FC = () => {
     number: string;
     countryCode: string;
   }
-  const [phoneNumbers, setPhoneNumbers] = useState<PhoneNumber[]>([
-    { id: 'phone-1', type: 'Mobil', number: '01512 3456789', countryCode: '+49' }
-  ]);
+  const [phoneNumbers, setPhoneNumbers] = useState<PhoneNumber[]>(() => {
+    try {
+      const saved = localStorage.getItem(PHONE_NUMBERS_STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) return parsed as PhoneNumber[];
+      }
+    } catch {
+      /* Fehlerhafte/blockierte Speicherung ignorieren und Defaults nutzen */
+    }
+    return DEFAULT_PHONE_NUMBERS;
+  });
+
+  // Eingaben bei jeder Änderung persistieren, damit sie nach dem Neuladen
+  // wieder vorausgewählt sind.
+  useEffect(() => {
+    try {
+      localStorage.setItem(FORM_DATA_STORAGE_KEY, JSON.stringify(formData));
+    } catch {
+      /* Speicherplatz voll / privater Modus – Persistenz überspringen */
+    }
+  }, [formData]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(PHONE_NUMBERS_STORAGE_KEY, JSON.stringify(phoneNumbers));
+    } catch {
+      /* Speicherplatz voll / privater Modus – Persistenz überspringen */
+    }
+  }, [phoneNumbers]);
   const [isPhoneModalOpen, setIsPhoneModalOpen] = useState(false);
   const [isWeiterleitenModalOpen, setIsWeiterleitenModalOpen] = useState(false);
   const [isKlientLoeschenModalOpen, setIsKlientLoeschenModalOpen] = useState(false);
@@ -1426,6 +1476,114 @@ const AnfrageSitzlift: React.FC = () => {
       ...prev,
       [name]: value
     }));
+  };
+
+  /**
+   * Erzeugt und lädt ein bearbeitbares Word-Dokument (.doc) mit der
+   * DSGVO-Auskunft nach Art. 15 Abs. 1, befüllt mit den Klientendaten aus
+   * der Maske. Das HTML-basierte .doc-Format wird von Word als voll
+   * bearbeitbares Dokument geöffnet und benötigt keine externen Pakete.
+   */
+  const handleDsgvoAuskunftDownload = () => {
+    const esc = (v?: string) =>
+      (v ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+    const list = (arr?: string[]) => esc((arr ?? []).join(', '));
+    // Telefonnummern nach Typ zuordnen
+    const phoneByType = (needle: string) =>
+      esc(
+        phoneNumbers
+          .filter((p) => p.type.toLowerCase().includes(needle))
+          .map((p) => `${p.countryCode} ${p.number}`.trim())
+          .join(', ')
+      );
+
+    const row = (label: string, value: string) =>
+      `<tr><td class="lbl">${label}</td><td class="val">${value || 'n/a'}</td></tr>`;
+
+    const personRows = [
+      row('Anrede', esc([formData.anrede, formData.akademGrad].filter(Boolean).join(' '))),
+      row('Vorname', esc(formData.vorname)),
+      row('Nachname', esc(formData.nachname)),
+      row('Straße und Hausnummer', ''),
+      row('Postleitzahl', esc(formData.postleitzahl)),
+      row('Ort', esc(formData.region)),
+      row('Land', ''),
+      row('Festnetz', phoneByType('festnetz')),
+      row('Mobil', phoneByType('mobil')),
+      row('Fax', phoneByType('fax')),
+      row('E-Mail-Adresse', esc(formData.email)),
+    ].join('');
+
+    const seniorRows = [
+      row('Beziehung', esc(formData.beziehung)),
+      row('Pflegegrad/-stufe', esc(formData.pflegegrad)),
+      row('Medizinischer Hintergrund', list(formData.medizinischerHintergrund)),
+      row('Mobilität', esc(formData.mobilitaet)),
+      row('Barrierefreiheit', list(formData.barrierefreiheit)),
+      row('Wohnsituation', list(formData.wohnsituation)),
+      row('Aktuelle Versorgung', list(formData.aktuelleVersorgung)),
+      row('Anrede', esc([formData.seniorAnrede, formData.seniorAkademGrad].filter(Boolean).join(' '))),
+      row('Vorname des Seniors', esc(formData.seniorVorname)),
+      row('Nachname des Seniors', esc(formData.seniorNachname)),
+      row('Alter', esc(formData.alter)),
+    ].join('');
+
+    const html = `<!DOCTYPE html>
+<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
+<head>
+<meta charset="utf-8">
+<title>DSGVO Auskunft nach Art. 15 Abs. 1</title>
+<!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View><w:Zoom>100</w:Zoom></w:WordDocument></xml><![endif]-->
+<style>
+@page { size: A4; margin: 2cm; }
+body { font-family: Arial, sans-serif; font-size: 10.5pt; color: #000; }
+.brand { color: #7a7a5c; font-size: 14pt; font-weight: bold; margin-bottom: 4pt; }
+.hinweis { font-size: 8.5pt; color: #555; margin-bottom: 18pt; }
+h1 { font-size: 13pt; margin: 0 0 14pt 0; }
+h2 { font-size: 11pt; margin: 16pt 0 6pt 0; }
+table { border-collapse: collapse; width: 100%; }
+td { border: 1px solid #333; padding: 3pt 6pt; vertical-align: top; }
+td.lbl { width: 40%; }
+td.val { width: 60%; }
+p { margin: 0 0 6pt 0; }
+</style>
+</head>
+<body>
+<div class="brand">Verbund Pflegehilfe</div>
+<p class="hinweis">„n/a" = kein Datenwert vorhanden oder keine Verarbeitung in dieser Kategorie.<br/>In Abschnitt 5 bedeutet „n/a" = keine Weitergabe an Dritte erfolgt.</p>
+
+<h1>Auskunft nach Art. 15 Abs. 1 der Datenschutz-Grundverordnung</h1>
+
+<h2>1. Gespeicherte Daten zu Ihrer Person</h2>
+<table>${personRows}</table>
+
+<h2>2. Gespeicherte Daten zur pflegebedürftigen Person</h2>
+<table>${seniorRows}</table>
+
+<h2>3. Zweck der Verarbeitung</h2>
+<p>Wir nutzen Ihre obenstehenden Daten ausschließlich zum Zwecke des Versands eines Newsletters und zur Vermittlung von Angeboten.</p>
+
+<h2>4. Kategorien der verarbeiteten Daten</h2>
+<p>Wir verarbeiten Stamm-, Kontakt-, Adress-, Sozial- und Gesundheitsdaten.</p>
+</body>
+</html>`;
+
+    const blob = new Blob(['﻿', html], { type: 'application/msword' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    const dateiName = ['DSGVO-Auskunft', formData.nachname, formData.vorname]
+      .filter(Boolean)
+      .join('_')
+      .replace(/\s+/g, '-');
+    link.href = url;
+    link.download = `${dateiName}.doc`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   // Telefonnummern-Funktionen
@@ -2284,6 +2442,18 @@ const AnfrageSitzlift: React.FC = () => {
                       <button type="button" className="aktionen-dropdown-item" role="menuitem" onClick={() => setIsAktionenDropdownOpen(false)}>
                         <span className="aktionen-dropdown-icon" aria-hidden="true">✅</span>
                         Adresse validieren
+                      </button>
+                      <button
+                        type="button"
+                        className="aktionen-dropdown-item"
+                        role="menuitem"
+                        onClick={() => {
+                          handleDsgvoAuskunftDownload();
+                          setIsAktionenDropdownOpen(false);
+                        }}
+                      >
+                        <span className="aktionen-dropdown-icon" aria-hidden="true">📄</span>
+                        DSGVO Auskunft
                       </button>
                     </div>
                     <div className="aktionen-dropdown-divider" role="separator" />
