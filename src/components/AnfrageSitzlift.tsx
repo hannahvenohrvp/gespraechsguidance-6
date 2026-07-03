@@ -2443,6 +2443,9 @@ p { margin: 0 0 6pt 0; }
                         <span className="aktionen-dropdown-icon" aria-hidden="true">✅</span>
                         Adresse validieren
                       </button>
+                    </div>
+                    <div className="aktionen-dropdown-divider" role="separator" />
+                    <div className="aktionen-dropdown-section" role="none">
                       <button
                         type="button"
                         className="aktionen-dropdown-item"
@@ -2453,11 +2456,8 @@ p { margin: 0 0 6pt 0; }
                         }}
                       >
                         <span className="aktionen-dropdown-icon" aria-hidden="true">📄</span>
-                        DSGVO Auskunft
+                        DSGVO-Auskunft
                       </button>
-                    </div>
-                    <div className="aktionen-dropdown-divider" role="separator" />
-                    <div className="aktionen-dropdown-section" role="none">
                       <button
                         type="button"
                         className="aktionen-dropdown-item"
