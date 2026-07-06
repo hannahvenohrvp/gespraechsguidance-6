@@ -942,6 +942,16 @@ const DEFAULT_PHONE_NUMBERS = [
   { id: 'phone-1', type: 'Mobil', number: '01512 3456789', countryCode: '+49' },
 ];
 
+// Popup-Variante 3 – kostenpflichtige Anbietervermittlung:
+// Regulärer Preis (Aufwandsentschädigung) und maximaler Rabatt, den der Berater
+// am Telefon einräumen darf. (Platzhalter-Werte – bei Bedarf anpassbar.)
+const PFLEGE_BASISPREIS = 100;
+const PFLEGE_MAX_RABATT = 50;
+const PFLEGE_RABATT_STUFEN = [0, 10, 20, 30, 40, 50];
+
+const formatEuro = (betrag: number) =>
+  betrag.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
 const AnfrageSitzlift: React.FC = () => {
   const [formData, setFormData] = useState<FormDataShape>(() => {
     try {
@@ -1050,7 +1060,50 @@ const AnfrageSitzlift: React.FC = () => {
   const [zustimmungNachgespraechBeratung, setZustimmungNachgespraechBeratung] = useState(false);
   /** „Kein akuter Bedarf“: optionaler Haken, um den E-Mail-Versand zu deaktivieren */
   const [keinBedarfEmailVersandDeaktiviert, setKeinBedarfEmailVersandDeaktiviert] = useState(false);
-  const [weiterleitenPopupVersion, setWeiterleitenPopupVersion] = useState<1 | 2 | 3 | 4>(1);
+  /** Popup-Variante 3: kostenpflichtige Anbietervermittlung – vom Berater am
+   *  Telefon eingeräumter Rabatt (in %) und Bestätigung des mündlichen Kaufvertrags. */
+  const [pflegeRabattProzent, setPflegeRabattProzent] = useState(0);
+  const [pflegeVertragBestaetigt, setPflegeVertragBestaetigt] = useState(false);
+  /** Popup-Variante 3: Produktzeilen (Sitzlift / Vollstationäre Pflege) können
+   *  einzeln entfernt werden. Sind beide entfernt, wechselt das Popup in den
+   *  Zustand von Variante 2 (Informationsbroschüre). */
+  const [sitzliftEntfernt, setSitzliftEntfernt] = useState(false);
+  const [pflegeEntfernt, setPflegeEntfernt] = useState(false);
+  const [weiterleitenPopupVersion, setWeiterleitenPopupVersion] = useState<1 | 2 | 3 | 4 | 5>(1);
+  // Neue Popup-Variante 3 ist (zunächst) identisch zu Variante 1. Dadurch rücken
+  // die bisherigen Varianten nach hinten: die alte Variante 3 ist jetzt 4, die
+  // alte Variante 4 ist jetzt 5. „effektivePopupVersion" bildet die Auswahl auf
+  // die ursprüngliche Varianten-Logik (1–4) ab, sodass die gesamte bestehende
+  // Popup-Logik unverändert weiterverwendet werden kann.
+  // Produkt-Zustand der Varianten mit Produktzeilen: Variante 1 zeigt nur den
+  // Sitzlift, Variante 3 zusätzlich „Vollstationäre Pflege". Sind alle Produkte
+  // weggeklickt, verhält sich das Popup wie Variante 2 (Informationsbroschüre);
+  // sonst wie Variante 1 (Produkte).
+  const produkteWeggeklickt =
+    weiterleitenPopupVersion === 1
+      ? sitzliftEntfernt
+      : weiterleitenPopupVersion === 3
+        ? sitzliftEntfernt && pflegeEntfernt
+        : false;
+  const effektivePopupVersion = (
+    weiterleitenPopupVersion === 1 || weiterleitenPopupVersion === 3
+      ? produkteWeggeklickt
+        ? 2
+        : 1
+      : weiterleitenPopupVersion >= 4
+        ? weiterleitenPopupVersion - 1
+        : weiterleitenPopupVersion
+  ) as 1 | 2 | 3 | 4;
+
+  // Popup-Variante 3: kostenpflichtige Anbietervermittlung. Regulärer Preis 100 €,
+  // der Berater kann am Telefon einen Rabatt (bis PFLEGE_MAX_RABATT %) einräumen.
+  // Freigegeben – und damit an die Anbieter versendbar – ist die Anfrage erst,
+  // wenn der mündliche Kaufvertrag bestätigt wurde. Der Sitzlift bleibt davon
+  // unberührt (kostenfrei, da Partneranbieter den Lead zahlt).
+  const pflegeRabattClamped = Math.min(Math.max(pflegeRabattProzent, 0), PFLEGE_MAX_RABATT);
+  const pflegeEndpreis = PFLEGE_BASISPREIS * (1 - pflegeRabattClamped / 100);
+  const pflegeVermittlungFreigegeben =
+    weiterleitenPopupVersion === 3 && !pflegeEntfernt && pflegeVertragBestaetigt;
   const [weiterleitenV3Tools, setWeiterleitenV3Tools] = useState({
     pflegegradChecked: true,
     kontaktPraeferenzenChecked: false,
@@ -1070,10 +1123,18 @@ const AnfrageSitzlift: React.FC = () => {
 
   // App-Variante 3/5/6 + Popup-Variante 2: NUR „Zuschüsse & Vorsorge“ angezeigt & vorausgewählt,
   // „Weitere“ klappt die restlichen Broschüren auf.
-  const istV3Popup2 = istWieVariante3 && weiterleitenPopupVersion === 2;
+  const istV3Popup2 = istWieVariante3 && effektivePopupVersion === 2;
+
+  // Beim Öffnen des Popups die entfernten Produktzeilen wieder herstellen.
+  useEffect(() => {
+    if (isWeiterleitenModalOpen) {
+      setSitzliftEntfernt(false);
+      setPflegeEntfernt(false);
+    }
+  }, [isWeiterleitenModalOpen]);
 
   useEffect(() => {
-    if (!isWeiterleitenModalOpen || weiterleitenPopupVersion === 1) {
+    if (!isWeiterleitenModalOpen || effektivePopupVersion === 1) {
       return;
     }
 
@@ -1081,7 +1142,7 @@ const AnfrageSitzlift: React.FC = () => {
     const istAppVariante2Oder3 = appVariant !== 1;
 
     // Popup-Variante 4 → alle Broschüren angezeigt, nichts vorausgewählt.
-    if (istAppVariante2Oder3 && weiterleitenPopupVersion === 4) {
+    if (istAppVariante2Oder3 && effektivePopupVersion === 4) {
       setWeiterleitenV3Tools({
         pflegegradChecked: false,
         kontaktPraeferenzenChecked: false,
@@ -1110,7 +1171,7 @@ const AnfrageSitzlift: React.FC = () => {
     //  · Popup-Variante 2 → „Hilfsmittel & Mobilität“ als 2. Kachel angeheftet & vorausgewählt,
     //    „Weitere“ eingeklappt (restliche Broschüren auf Klick).
     //  · Popup-Variante 3 → alle Broschüren angezeigt (ausgeklappt) und vorausgewählt.
-    const alleBroschueren = istAppVariante2Oder3 && weiterleitenPopupVersion === 3;
+    const alleBroschueren = istAppVariante2Oder3 && effektivePopupVersion === 3;
     setWeiterleitenV3Tools({
       pflegegradChecked: true,
       kontaktPraeferenzenChecked: false,
@@ -1119,14 +1180,14 @@ const AnfrageSitzlift: React.FC = () => {
       zuschuesseVorsorgeChecked: alleBroschueren,
       showMoreTools: alleBroschueren,
     });
-  }, [isWeiterleitenModalOpen, weiterleitenPopupVersion, appVariant]);
+  }, [isWeiterleitenModalOpen, effektivePopupVersion, appVariant]);
 
 
   // Popup-Varianten 2/3/4 zeigen die interaktiven Broschüren-Kacheln (statt der Sitzlift-Anbieter)
   const weiterleitenZeigtTools =
-    weiterleitenPopupVersion === 2 ||
-    weiterleitenPopupVersion === 3 ||
-    weiterleitenPopupVersion === 4;
+    effektivePopupVersion === 2 ||
+    effektivePopupVersion === 3 ||
+    effektivePopupVersion === 4;
 
   // „Kein akuter Bedarf: E-Mail-Strecke“ nur, wenn ALLE grünen Broschüren abgewählt sind
   const keineBroschuereAusgewaehlt =
@@ -1148,8 +1209,8 @@ const AnfrageSitzlift: React.FC = () => {
   //  · Popup-3 → Nachgespräch-Zustimmung zusätzlich angezeigt, aber OPTIONAL.
   //  · Popup-4 → Nachgespräch-Zustimmung zusätzlich angezeigt und PFLICHT.
   //  · „Kontakt-Einstellungen“ gewählt → Nachgespräch-Zustimmung bleibt ausgeblendet.
-  const istV1Popup3 = appVariant === 1 && weiterleitenPopupVersion === 3;
-  const istV1Popup4 = appVariant === 1 && weiterleitenPopupVersion === 4;
+  const istV1Popup3 = appVariant === 1 && effektivePopupVersion === 3;
+  const istV1Popup4 = appVariant === 1 && effektivePopupVersion === 4;
   const keinAkuterBedarfGewaehlt =
     weiterleitenV2EmailStreckeSichtbar && !weiterleitenV3Tools.kontaktPraeferenzenChecked;
 
@@ -1163,7 +1224,7 @@ const AnfrageSitzlift: React.FC = () => {
     ((istV1Popup3 || istV1Popup4) && keinAkuterBedarfGewaehlt);
 
   const weiterleitenAbschickenEnabled =
-    weiterleitenPopupVersion === 1
+    effektivePopupVersion === 1
       ? zustimmungKontaktweitergabe &&
         zustimmungNachgespraechBeratung &&
         (erreichbarkeit.ganztägig ||
@@ -1941,7 +2002,7 @@ p { margin: 0 0 6pt 0; }
                   onClick={() => setIsWeiterleitenModalOpen(false)}
                 >
                   <div
-                    className={`modal-content weiterleiten-modal weiterleiten-modal--v${weiterleitenPopupVersion}`}
+                    className={`modal-content weiterleiten-modal weiterleiten-modal--v${effektivePopupVersion}`}
                     onClick={(e) => e.stopPropagation()}
                   >
                     <div className="weiterleiten-modal-kopfzeile">
@@ -1977,16 +2038,43 @@ p { margin: 0 0 6pt 0; }
                           >
                             4
                           </button>
+                          <button
+                            type="button"
+                            className={weiterleitenPopupVersion === 5 ? 'is-active' : ''}
+                            onClick={() => setWeiterleitenPopupVersion(5)}
+                          >
+                            5
+                          </button>
                         </div>
                       </div>
                     </div>
 
                     <div
-                      className={`weiterleiten-grid${weiterleitenPopupVersion !== 1 ? ' weiterleiten-grid--ohne-sitzlift-zeile' : ''}`}
+                      className={`weiterleiten-grid${effektivePopupVersion !== 1 ? ' weiterleiten-grid--ohne-sitzlift-zeile' : ''}`}
                     >
-                      {weiterleitenPopupVersion === 1 && (
+                      {effektivePopupVersion === 1 && (
                         <>
-                          <div className="weiterleiten-column-title">Sitzlift</div>
+                          {(weiterleitenPopupVersion !== 3 || !sitzliftEntfernt) && (
+                            <>
+                          <div className="weiterleiten-column-title">
+                            <div className="weiterleiten-spaltenkopf">
+                              <span>Sitzlift</span>
+                              {weiterleitenPopupVersion === 3 && (
+                                <span className="weiterleiten-preis-badge weiterleiten-preis-badge--frei">
+                                  Kostenfrei
+                                </span>
+                              )}
+                              <button
+                                type="button"
+                                className="weiterleiten-produkt-entfernen"
+                                onClick={() => setSitzliftEntfernt(true)}
+                                aria-label="Sitzlift entfernen"
+                                title="Sitzlift entfernen"
+                              >
+                                ✕
+                              </button>
+                            </div>
+                          </div>
                           <div className="weiterleiten-anbieter-card selected">
                             <div className="anbieter-head">
                               <span className="anbieter-name">Sonilift GmbH</span>
@@ -2015,10 +2103,71 @@ p { margin: 0 0 6pt 0; }
                             </div>
                             <div className="anbieter-status">Kriterien Check erfolgreich!</div>
                           </div>
+                            </>
+                          )}
+
+                          {/* Zweite Zeile – nur Popup-Variante 3: Vollstationäre Pflege (kostenpflichtig) */}
+                          {weiterleitenPopupVersion === 3 && !pflegeEntfernt && (() => {
+                            const pflegeAnbieter = [
+                              'CuraVita Pflegeresidenz',
+                              'SeniorenResidenz Sonnengarten',
+                              'Aurelia Pflegezentrum',
+                              'VitaNova Seniorenheim',
+                            ];
+                            return (
+                              <>
+                                <div className="weiterleiten-column-title">
+                                  <div className="weiterleiten-spaltenkopf">
+                                    <span>Vollstationäre Pflege</span>
+                                    <span
+                                      className={`weiterleiten-preis-badge ${
+                                        pflegeVermittlungFreigegeben
+                                          ? 'weiterleiten-preis-badge--freigegeben'
+                                          : 'weiterleiten-preis-badge--kostenpflichtig'
+                                      }`}
+                                    >
+                                      {pflegeVermittlungFreigegeben ? '🔓 Freigegeben' : '🔒 Kostenpflichtig'}
+                                    </span>
+                                    <button
+                                      type="button"
+                                      className="weiterleiten-produkt-entfernen"
+                                      onClick={() => setPflegeEntfernt(true)}
+                                      aria-label="Vollstationäre Pflege entfernen"
+                                      title="Vollstationäre Pflege entfernen"
+                                    >
+                                      ✕
+                                    </button>
+                                  </div>
+                                </div>
+                                {pflegeAnbieter.map((name) => (
+                                  <div
+                                    key={name}
+                                    className={`weiterleiten-anbieter-card selected weiterleiten-anbieter-card--pflege${
+                                      pflegeVermittlungFreigegeben ? '' : ' weiterleiten-anbieter-card--gesperrt'
+                                    }`}
+                                  >
+                                    <div className="anbieter-head">
+                                      <span className="anbieter-name">{name}</span>
+                                      <span
+                                        className="anbieter-check"
+                                        title={
+                                          pflegeVermittlungFreigegeben
+                                            ? 'Freigegeben – Anfrage geht an diesen Anbieter'
+                                            : 'Gesperrt – erst nach Preiserfassung & Kaufvertrag'
+                                        }
+                                      >
+                                        {pflegeVermittlungFreigegeben ? '✓' : '🔒'}
+                                      </span>
+                                    </div>
+                                  </div>
+                                ))}
+                              </>
+                            );
+                          })()}
                         </>
                       )}
 
-                      {weiterleitenPopupVersion !== 1 && (
+                      {effektivePopupVersion !== 1 && (
                         <>
                           <div className="weiterleiten-column-title weiterleiten-column-title--tools">
                             <span className="weiterleiten-tools-heading">Informationsbroschüre</span>
@@ -2180,8 +2329,108 @@ p { margin: 0 0 6pt 0; }
                       )}
                     </div>
 
+                    {/* Popup-Variante 3: kostenpflichtige Vermittlung „Vollstationäre Pflege" */}
+                    {weiterleitenPopupVersion === 3 && !pflegeEntfernt && (
+                      <div
+                        className={`weiterleiten-pflege-kosten${
+                          pflegeVermittlungFreigegeben ? ' weiterleiten-pflege-kosten--freigegeben' : ''
+                        }`}
+                      >
+                        <div className="weiterleiten-pflege-kosten-kopf">
+                          <span className="weiterleiten-pflege-kosten-icon" aria-hidden="true">
+                            {pflegeVermittlungFreigegeben ? '🔓' : '🔒'}
+                          </span>
+                          <div>
+                            <div className="weiterleiten-pflege-kosten-titel">
+                              Kostenpflichtige Anbietervermittlung
+                            </div>
+                            <p className="weiterleiten-pflege-kosten-text">
+                              Wir können für den Klienten die individuelle Suche und Auswahl eines
+                              passenden Anbieters übernehmen. Dafür berechnen wir eine einmalige
+                              Aufwandsentschädigung von {formatEuro(PFLEGE_BASISPREIS)} €.
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Preis + Rabatt: regulär 100 €, Berater kann Rabatt gewähren */}
+                        <div className="weiterleiten-pflege-preisblock">
+                          <div className="weiterleiten-pflege-preiszeile">
+                            <span className="weiterleiten-pflege-preis-label">Aufwandsentschädigung</span>
+                            {pflegeRabattClamped > 0 && (
+                              <span className="weiterleiten-pflege-preis-alt">{formatEuro(PFLEGE_BASISPREIS)} €</span>
+                            )}
+                            <span className="weiterleiten-pflege-preis-endbetrag">{formatEuro(pflegeEndpreis)} €</span>
+                            {pflegeRabattClamped > 0 && (
+                              <span className="weiterleiten-pflege-preis-rabattpill">−{pflegeRabattClamped} % Rabatt</span>
+                            )}
+                          </div>
+
+                          <div className="weiterleiten-pflege-rabatt">
+                            <span className="weiterleiten-pflege-rabatt-label">Rabatt einräumen</span>
+                            <div className="weiterleiten-pflege-rabatt-buttons">
+                              {PFLEGE_RABATT_STUFEN.map((stufe) => (
+                                <button
+                                  key={stufe}
+                                  type="button"
+                                  className={pflegeRabattProzent === stufe ? 'is-active' : ''}
+                                  onClick={() => setPflegeRabattProzent(stufe)}
+                                >
+                                  {stufe === 0 ? 'Kein Rabatt' : `${stufe} %`}
+                                </button>
+                              ))}
+                              <span className="weiterleiten-pflege-rabatt-custom">
+                                <input
+                                  type="number"
+                                  min={0}
+                                  max={PFLEGE_MAX_RABATT}
+                                  value={pflegeRabattProzent}
+                                  onChange={(e) =>
+                                    setPflegeRabattProzent(
+                                      Math.min(Math.max(Number(e.target.value) || 0, 0), PFLEGE_MAX_RABATT)
+                                    )
+                                  }
+                                  aria-label="Individueller Rabatt in Prozent"
+                                />
+                                <span aria-hidden="true">%</span>
+                              </span>
+                            </div>
+                            <div className="weiterleiten-pflege-rabatt-hinweis">
+                              Du darfst bis zu {PFLEGE_MAX_RABATT} % Rabatt gewähren.
+                            </div>
+                          </div>
+                        </div>
+
+                        <label
+                          className={`weiterleiten-consent weiterleiten-pflege-vertrag ${
+                            !pflegeVertragBestaetigt ? 'weiterleiten-option-unchecked' : ''
+                          }`}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={pflegeVertragBestaetigt}
+                            onChange={(e) => setPflegeVertragBestaetigt(e.target.checked)}
+                          />
+                          Der Klient hat der kostenpflichtigen Anbietervermittlung zu{' '}
+                          {formatEuro(pflegeEndpreis)} € telefonisch zugestimmt (mündlicher Kaufvertrag).
+                        </label>
+
+                        <div
+                          className={`weiterleiten-pflege-kosten-status ${
+                            pflegeVermittlungFreigegeben
+                              ? 'weiterleiten-pflege-kosten-status--frei'
+                              : 'weiterleiten-pflege-kosten-status--gesperrt'
+                          }`}
+                          role="status"
+                        >
+                          {pflegeVermittlungFreigegeben
+                            ? '🔓 Freigegeben – die Anfrage geht nach dem Absenden auch an die aufgeführten Anbieter.'
+                            : '🔒 Gesperrt – mündlichen Kaufvertrag bestätigen, damit die Anfrage an die aufgeführten Anbieter gesendet wird.'}
+                        </div>
+                      </div>
+                    )}
+
                     <div className="weiterleiten-klient-block">
-                      {weiterleitenPopupVersion === 1 && (
+                      {effektivePopupVersion === 1 && (
                         <div className="weiterleiten-klient-erreichbarkeit">
                           <div className="weiterleiten-options-title">Beste telefonische Erreichbarkeit</div>
                           <div className="weiterleiten-options">
@@ -2228,10 +2477,10 @@ p { margin: 0 0 6pt 0; }
                           </div>
                         </div>
                       )}
-                      {(weiterleitenPopupVersion === 1 ||
+                      {(effektivePopupVersion === 1 ||
                         nachgespraechConsentSichtbar) && (
                         <div className="weiterleiten-klient-zustimmung">
-                          {weiterleitenPopupVersion === 1 && (
+                          {effektivePopupVersion === 1 && (
                             <label className={`weiterleiten-consent ${!zustimmungKontaktweitergabe ? 'weiterleiten-option-unchecked' : ''}`}>
                               <input
                                 type="checkbox"
@@ -2250,7 +2499,7 @@ p { margin: 0 0 6pt 0; }
                                 checked={zustimmungNachgespraechBeratung}
                                 onChange={(e) => setZustimmungNachgespraechBeratung(e.target.checked)}
                                 aria-required={
-                                  weiterleitenPopupVersion === 1 ||
+                                  effektivePopupVersion === 1 ||
                                   (weiterleitenZeigtTools && weiterleitenV2V3NachgespraechZustimmungErforderlich)
                                 }
                               />
@@ -2287,7 +2536,7 @@ p { margin: 0 0 6pt 0; }
                     </div>
                     <div className="weiterleiten-footer weiterleiten-footer--stacked">
                       <div className="weiterleiten-footer-trailing">
-                        {weiterleitenPopupVersion === 1 && (
+                        {effektivePopupVersion === 1 && (
                           <div className="weiterleiten-note">
                             Super - die umsatzstärkste Anbieterauswahl wurde ausgewählt!
                           </div>
@@ -2297,7 +2546,7 @@ p { margin: 0 0 6pt 0; }
                             Deine Erfolgsquote sinkt.
                           </div>
                         )}
-                        {weiterleitenPopupVersion !== 1 && !weiterleitenBonusHinweisSichtbar && (
+                        {effektivePopupVersion !== 1 && !weiterleitenBonusHinweisSichtbar && (
                           <div className="weiterleiten-erfolg-hinweis">
                             Deine Erfolgsquote steigt.
                           </div>
@@ -2312,7 +2561,11 @@ p { margin: 0 0 6pt 0; }
                               setIsWeiterleitenModalOpen(false);
                             }}
                           >
-                            Abschicken
+                            {weiterleitenPopupVersion === 3 && !produkteWeggeklickt
+                              ? pflegeVermittlungFreigegeben
+                                ? 'Abschicken (inkl. kostenpflichtiger Anbietervermittlung)'
+                                : 'Abschicken (nur kostenfreie Produkte)'
+                              : 'Abschicken'}
                           </button>
                           <button type="button" className="btn-orange" onClick={() => setIsWeiterleitenModalOpen(false)}>
                             Abbrechen

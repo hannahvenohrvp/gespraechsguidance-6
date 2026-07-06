@@ -3436,6 +3436,258 @@
   background: #d7ecfb;
 }
 
+/* Popup-Variante 3: Kacheln der Zeile „Vollstationäre Pflege“ in Gelb/Orange
+   statt Blau (Titelspalte bleibt weiß, Häkchen bleiben blau). */
+.weiterleiten-anbieter-card--pflege.selected {
+  background: #fdeccf;
+}
+
+/* Gesperrte Pflege-Kacheln (noch kein Preis/Kaufvertrag) – leicht abgeblendet */
+.weiterleiten-anbieter-card--gesperrt {
+  opacity: 0.6;
+}
+
+/* Spaltenkopf mit Titel + Preis-Badge */
+.weiterleiten-spaltenkopf {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  text-align: center;
+}
+
+.weiterleiten-preis-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10.5px;
+  font-weight: 700;
+  line-height: 1;
+  padding: 3px 7px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+/* „✕"-Button zum Entfernen einer Produktzeile (Popup-Variante 3) */
+.weiterleiten-produkt-entfernen {
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: 1px solid #cbd2d9;
+  border-radius: 50%;
+  background: #fff;
+  color: #6b7280;
+  font-size: 10px;
+  line-height: 1;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.weiterleiten-produkt-entfernen:hover {
+  border-color: #d9534f;
+  background: #fdecea;
+  color: #d9534f;
+}
+
+.weiterleiten-preis-badge--frei {
+  background: #d8f0dd;
+  color: #1c7a37;
+}
+
+.weiterleiten-preis-badge--kostenpflichtig {
+  background: #fde1c0;
+  color: #9a5a12;
+}
+
+.weiterleiten-preis-badge--freigegeben {
+  background: #d8f0dd;
+  color: #1c7a37;
+}
+
+/* Kostenpflichtige Vermittlung „Vollstationäre Pflege" – Box unter dem Raster */
+.weiterleiten-pflege-kosten {
+  border: 1px solid #e8b877;
+  border-left: 4px solid #e8912a;
+  background: #fff8ef;
+  border-radius: 8px;
+  padding: 14px 16px;
+  margin-bottom: 12px;
+}
+
+.weiterleiten-pflege-kosten--freigegeben {
+  border-color: #96cfa4;
+  border-left-color: #2f9e51;
+  background: #f2faf4;
+}
+
+.weiterleiten-pflege-kosten-kopf {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.weiterleiten-pflege-kosten-icon {
+  font-size: 18px;
+  line-height: 1.2;
+  flex-shrink: 0;
+}
+
+.weiterleiten-pflege-kosten-titel {
+  font-weight: 700;
+  font-size: 13px;
+  color: #1f2937;
+  margin-bottom: 2px;
+}
+
+.weiterleiten-pflege-kosten-text {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #4b5563;
+}
+
+/* Preis + Rabatt */
+.weiterleiten-pflege-preisblock {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 24px;
+  margin: 12px 0;
+  padding: 10px 12px;
+  background: #fff;
+  border: 1px solid #e8b877;
+  border-radius: 6px;
+}
+
+.weiterleiten-pflege-preiszeile {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.weiterleiten-pflege-preis-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.weiterleiten-pflege-preis-alt {
+  font-size: 13px;
+  color: #9ca3af;
+  text-decoration: line-through;
+}
+
+.weiterleiten-pflege-preis-endbetrag {
+  font-size: 18px;
+  font-weight: 800;
+  color: #9a5a12;
+}
+
+.weiterleiten-pflege-preis-rabattpill {
+  font-size: 11px;
+  font-weight: 700;
+  color: #1c7a37;
+  background: #d8f0dd;
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+.weiterleiten-pflege-rabatt {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.weiterleiten-pflege-rabatt-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.weiterleiten-pflege-rabatt-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.weiterleiten-pflege-rabatt-buttons button {
+  padding: 5px 10px;
+  border: 1px solid #b0b6bd;
+  border-radius: 6px;
+  background: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  color: #374151;
+  cursor: pointer;
+}
+
+.weiterleiten-pflege-rabatt-buttons button:hover {
+  border-color: #e8912a;
+}
+
+.weiterleiten-pflege-rabatt-buttons button.is-active {
+  background: #e8912a;
+  border-color: #e8912a;
+  color: #fff;
+}
+
+.weiterleiten-pflege-rabatt-custom {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: #374151;
+}
+
+.weiterleiten-pflege-rabatt-custom input {
+  width: 58px;
+  padding: 5px 6px;
+  border: 1px solid #b0b6bd;
+  border-radius: 6px;
+  font-size: 12px;
+  box-sizing: border-box;
+}
+
+.weiterleiten-pflege-rabatt-custom input:focus {
+  outline: none;
+  border-color: #e8912a;
+  box-shadow: 0 0 0 2px rgba(232, 145, 42, 0.2);
+}
+
+.weiterleiten-pflege-rabatt-hinweis {
+  font-size: 11px;
+  color: #6b7280;
+}
+
+.weiterleiten-pflege-vertrag {
+  display: block;
+  font-size: 12px;
+  margin-bottom: 10px;
+}
+
+.weiterleiten-pflege-kosten-status {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 8px 10px;
+  border-radius: 6px;
+}
+
+.weiterleiten-pflege-kosten-status--gesperrt {
+  background: #fdeccf;
+  color: #9a5a12;
+}
+
+.weiterleiten-pflege-kosten-status--frei {
+  background: #dff2e4;
+  color: #1c7a37;
+}
+
 .anbieter-head {
   display: flex;
   justify-content: space-between;
