@@ -3637,29 +3637,6 @@
   color: #fff;
 }
 
-.weiterleiten-pflege-rabatt-custom {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 12px;
-  color: #374151;
-}
-
-.weiterleiten-pflege-rabatt-custom input {
-  width: 58px;
-  padding: 5px 6px;
-  border: 1px solid #b0b6bd;
-  border-radius: 6px;
-  font-size: 12px;
-  box-sizing: border-box;
-}
-
-.weiterleiten-pflege-rabatt-custom input:focus {
-  outline: none;
-  border-color: #e8912a;
-  box-shadow: 0 0 0 2px rgba(232, 145, 42, 0.2);
-}
-
 .weiterleiten-pflege-rabatt-hinweis {
   font-size: 11px;
   color: #6b7280;
@@ -3669,23 +3646,6 @@
   display: block;
   font-size: 12px;
   margin-bottom: 10px;
-}
-
-.weiterleiten-pflege-kosten-status {
-  font-size: 12px;
-  font-weight: 600;
-  padding: 8px 10px;
-  border-radius: 6px;
-}
-
-.weiterleiten-pflege-kosten-status--gesperrt {
-  background: #fdeccf;
-  color: #9a5a12;
-}
-
-.weiterleiten-pflege-kosten-status--frei {
-  background: #dff2e4;
-  color: #1c7a37;
 }
 
 .anbieter-head {

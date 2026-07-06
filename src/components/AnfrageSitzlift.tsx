@@ -1223,8 +1223,14 @@ const AnfrageSitzlift: React.FC = () => {
     !weiterleitenV2EmailStreckeSichtbar ||
     ((istV1Popup3 || istV1Popup4) && keinAkuterBedarfGewaehlt);
 
+  // Solange das kostenpflichtige Produkt „Vollstationäre Pflege" im Popup ist,
+  // muss der mündliche Kaufvertrag bestätigt sein, bevor abgeschickt werden kann.
+  // Will man die kostenpflichtige Anbietervermittlung nicht, muss das Produkt
+  // stattdessen entfernt (geschlossen) werden.
+  const pflegeVertragErforderlich = weiterleitenPopupVersion === 3 && !pflegeEntfernt;
+
   const weiterleitenAbschickenEnabled =
-    effektivePopupVersion === 1
+    (effektivePopupVersion === 1
       ? zustimmungKontaktweitergabe &&
         zustimmungNachgespraechBeratung &&
         (erreichbarkeit.ganztägig ||
@@ -1233,7 +1239,8 @@ const AnfrageSitzlift: React.FC = () => {
           erreichbarkeit.abends)
       : weiterleitenV2V3NachgespraechZustimmungErforderlich
         ? zustimmungNachgespraechBeratung
-        : true;
+        : true) &&
+    (!pflegeVertragErforderlich || pflegeVertragBestaetigt);
 
   const toggleWeiterleitenV3Pflegegrad = () => {
     setWeiterleitenV3Tools((prev) => {
@@ -2378,21 +2385,6 @@ p { margin: 0 0 6pt 0; }
                                   {stufe === 0 ? 'Kein Rabatt' : `${stufe} %`}
                                 </button>
                               ))}
-                              <span className="weiterleiten-pflege-rabatt-custom">
-                                <input
-                                  type="number"
-                                  min={0}
-                                  max={PFLEGE_MAX_RABATT}
-                                  value={pflegeRabattProzent}
-                                  onChange={(e) =>
-                                    setPflegeRabattProzent(
-                                      Math.min(Math.max(Number(e.target.value) || 0, 0), PFLEGE_MAX_RABATT)
-                                    )
-                                  }
-                                  aria-label="Individueller Rabatt in Prozent"
-                                />
-                                <span aria-hidden="true">%</span>
-                              </span>
                             </div>
                             <div className="weiterleiten-pflege-rabatt-hinweis">
                               Du darfst bis zu {PFLEGE_MAX_RABATT} % Rabatt gewähren.
@@ -2414,18 +2406,6 @@ p { margin: 0 0 6pt 0; }
                           {formatEuro(pflegeEndpreis)} € telefonisch zugestimmt (mündlicher Kaufvertrag).
                         </label>
 
-                        <div
-                          className={`weiterleiten-pflege-kosten-status ${
-                            pflegeVermittlungFreigegeben
-                              ? 'weiterleiten-pflege-kosten-status--frei'
-                              : 'weiterleiten-pflege-kosten-status--gesperrt'
-                          }`}
-                          role="status"
-                        >
-                          {pflegeVermittlungFreigegeben
-                            ? '🔓 Freigegeben – die Anfrage geht nach dem Absenden auch an die aufgeführten Anbieter.'
-                            : '🔒 Gesperrt – mündlichen Kaufvertrag bestätigen, damit die Anfrage an die aufgeführten Anbieter gesendet wird.'}
-                        </div>
                       </div>
                     )}
 
@@ -2561,11 +2541,7 @@ p { margin: 0 0 6pt 0; }
                               setIsWeiterleitenModalOpen(false);
                             }}
                           >
-                            {weiterleitenPopupVersion === 3 && !produkteWeggeklickt
-                              ? pflegeVermittlungFreigegeben
-                                ? 'Abschicken (inkl. kostenpflichtiger Anbietervermittlung)'
-                                : 'Abschicken (nur kostenfreie Produkte)'
-                              : 'Abschicken'}
+                            Abschicken
                           </button>
                           <button type="button" className="btn-orange" onClick={() => setIsWeiterleitenModalOpen(false)}>
                             Abbrechen
