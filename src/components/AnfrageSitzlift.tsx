@@ -2075,10 +2075,11 @@ p { margin: 0 0 6pt 0; }
                                 type="button"
                                 className="weiterleiten-produkt-entfernen"
                                 onClick={() => setSitzliftEntfernt(true)}
-                                aria-label="Sitzlift entfernen"
-                                title="Sitzlift entfernen"
+                                aria-label="Sitzlift aus der Weiterleitung entfernen"
+                                title="Sitzlift aus der Weiterleitung entfernen"
                               >
-                                ✕
+                                <span className="weiterleiten-produkt-entfernen-icon" aria-hidden="true">✕</span>
+                                Schließen
                               </button>
                             </div>
                           </div>
@@ -2139,10 +2140,11 @@ p { margin: 0 0 6pt 0; }
                                       type="button"
                                       className="weiterleiten-produkt-entfernen"
                                       onClick={() => setPflegeEntfernt(true)}
-                                      aria-label="Vollstationäre Pflege entfernen"
-                                      title="Vollstationäre Pflege entfernen"
+                                      aria-label="Vollstationäre Pflege aus der Weiterleitung entfernen"
+                                      title="Vollstationäre Pflege aus der Weiterleitung entfernen"
                                     >
-                                      ✕
+                                      <span className="weiterleiten-produkt-entfernen-icon" aria-hidden="true">✕</span>
+                                      Schließen
                                     </button>
                                   </div>
                                 </div>
