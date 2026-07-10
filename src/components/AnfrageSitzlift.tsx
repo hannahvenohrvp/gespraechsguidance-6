@@ -946,6 +946,8 @@ const DEFAULT_PHONE_NUMBERS = [
 // Regulärer Preis (Aufwandsentschädigung) und maximaler Rabatt, den der Berater
 // am Telefon einräumen darf. (Platzhalter-Werte – bei Bedarf anpassbar.)
 const PFLEGE_BASISPREIS = 100;
+/** Popup-Variante 4: fester Preis der Aufwandsentschädigung, ohne Rabatt. */
+const PFLEGE_FIXPREIS_V4 = 99;
 const PFLEGE_MAX_RABATT = 50;
 const PFLEGE_RABATT_STUFEN = [0, 10, 20, 30, 40, 50];
 
@@ -1111,7 +1113,9 @@ const AnfrageSitzlift: React.FC = () => {
   // wenn der mündliche Kaufvertrag bestätigt wurde. Der Sitzlift bleibt davon
   // unberührt (kostenfrei, da Partneranbieter den Lead zahlt).
   const pflegeRabattClamped = Math.min(Math.max(pflegeRabattProzent, 0), PFLEGE_MAX_RABATT);
-  const pflegeEndpreis = PFLEGE_BASISPREIS * (1 - pflegeRabattClamped / 100);
+  const pflegeEndpreis = istPopup4Variante1
+    ? PFLEGE_FIXPREIS_V4
+    : PFLEGE_BASISPREIS * (1 - pflegeRabattClamped / 100);
   const pflegeVermittlungFreigegeben =
     wirksamePopupVersion === 3 && !pflegeEntfernt && pflegeVertragBestaetigt;
   const [weiterleitenV3Tools, setWeiterleitenV3Tools] = useState({
@@ -1262,7 +1266,7 @@ const AnfrageSitzlift: React.FC = () => {
           <p className="weiterleiten-pflege-kosten-text">
             Wir können für den Klienten die individuelle Suche und Auswahl eines
             passenden Anbieters übernehmen. Dafür berechnen wir eine einmalige
-            Aufwandsentschädigung von {formatEuro(PFLEGE_BASISPREIS)} €.
+            Aufwandsentschädigung von {formatEuro(istPopup4Variante1 ? PFLEGE_FIXPREIS_V4 : PFLEGE_BASISPREIS)} €.
           </p>
         </div>
       </div>
@@ -1271,33 +1275,36 @@ const AnfrageSitzlift: React.FC = () => {
       <div className="weiterleiten-pflege-preisblock">
         <div className="weiterleiten-pflege-preiszeile">
           <span className="weiterleiten-pflege-preis-label">Aufwandsentschädigung</span>
-          {pflegeRabattClamped > 0 && (
+          {!istPopup4Variante1 && pflegeRabattClamped > 0 && (
             <span className="weiterleiten-pflege-preis-alt">{formatEuro(PFLEGE_BASISPREIS)} €</span>
           )}
           <span className="weiterleiten-pflege-preis-endbetrag">{formatEuro(pflegeEndpreis)} €</span>
-          {pflegeRabattClamped > 0 && (
+          {!istPopup4Variante1 && pflegeRabattClamped > 0 && (
             <span className="weiterleiten-pflege-preis-rabattpill">−{pflegeRabattClamped} % Rabatt</span>
           )}
         </div>
 
-        <div className="weiterleiten-pflege-rabatt">
-          <span className="weiterleiten-pflege-rabatt-label">Rabatt einräumen</span>
-          <div className="weiterleiten-pflege-rabatt-buttons">
-            {PFLEGE_RABATT_STUFEN.map((stufe) => (
-              <button
-                key={stufe}
-                type="button"
-                className={pflegeRabattProzent === stufe ? 'is-active' : ''}
-                onClick={() => setPflegeRabattProzent(stufe)}
-              >
-                {stufe === 0 ? 'Kein Rabatt' : `${stufe} %`}
-              </button>
-            ))}
+        {/* Rabatt-Teil nur außerhalb Popup-Variante 4 (dort fester Preis ohne Rabatt) */}
+        {!istPopup4Variante1 && (
+          <div className="weiterleiten-pflege-rabatt">
+            <span className="weiterleiten-pflege-rabatt-label">Rabatt einräumen</span>
+            <div className="weiterleiten-pflege-rabatt-buttons">
+              {PFLEGE_RABATT_STUFEN.map((stufe) => (
+                <button
+                  key={stufe}
+                  type="button"
+                  className={pflegeRabattProzent === stufe ? 'is-active' : ''}
+                  onClick={() => setPflegeRabattProzent(stufe)}
+                >
+                  {stufe === 0 ? 'Kein Rabatt' : `${stufe} %`}
+                </button>
+              ))}
+            </div>
+            <div className="weiterleiten-pflege-rabatt-hinweis">
+              Du darfst bis zu {PFLEGE_MAX_RABATT} % Rabatt gewähren.
+            </div>
           </div>
-          <div className="weiterleiten-pflege-rabatt-hinweis">
-            Du darfst bis zu {PFLEGE_MAX_RABATT} % Rabatt gewähren.
-          </div>
-        </div>
+        )}
       </div>
 
       <label
