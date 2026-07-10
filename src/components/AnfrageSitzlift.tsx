@@ -1079,20 +1079,30 @@ const AnfrageSitzlift: React.FC = () => {
   // Sitzlift, Variante 3 zusätzlich „Vollstationäre Pflege". Sind alle Produkte
   // weggeklickt, verhält sich das Popup wie Variante 2 (Informationsbroschüre);
   // sonst wie Variante 1 (Produkte).
+  // App-Variante 1: Popup-Variante 4 verhält sich (zunächst) exakt wie Popup-Variante 3.
+  // Der Segment-Button behält seine eigene Nummer (4 bleibt sichtbar aktiv); die gesamte
+  // Popup-Logik rechnet jedoch mit `wirksamePopupVersion`. Zum Abweichen später hier bzw.
+  // an den `wirksamePopupVersion === …`-Stellen verzweigen.
+  const wirksamePopupVersion =
+    appVariant === 1 && weiterleitenPopupVersion === 4 ? 3 : weiterleitenPopupVersion;
+  // Popup-Variante 4 (App-Variante 1) weicht ab: die Anbieter-Kacheln der
+  // Vollstationären Pflege entfallen; stattdessen steht der Kostenblock direkt
+  // oben in der Produktzeile (statt unterhalb des Rasters).
+  const istPopup4Variante1 = appVariant === 1 && weiterleitenPopupVersion === 4;
   const produkteWeggeklickt =
-    weiterleitenPopupVersion === 1
+    wirksamePopupVersion === 1
       ? sitzliftEntfernt
-      : weiterleitenPopupVersion === 3
+      : wirksamePopupVersion === 3
         ? sitzliftEntfernt && pflegeEntfernt
         : false;
   const effektivePopupVersion = (
-    weiterleitenPopupVersion === 1 || weiterleitenPopupVersion === 3
+    wirksamePopupVersion === 1 || wirksamePopupVersion === 3
       ? produkteWeggeklickt
         ? 2
         : 1
-      : weiterleitenPopupVersion >= 4
-        ? weiterleitenPopupVersion - 1
-        : weiterleitenPopupVersion
+      : wirksamePopupVersion >= 4
+        ? wirksamePopupVersion - 1
+        : wirksamePopupVersion
   ) as 1 | 2 | 3 | 4;
 
   // Popup-Variante 3: kostenpflichtige Anbietervermittlung. Regulärer Preis 100 €,
@@ -1103,7 +1113,7 @@ const AnfrageSitzlift: React.FC = () => {
   const pflegeRabattClamped = Math.min(Math.max(pflegeRabattProzent, 0), PFLEGE_MAX_RABATT);
   const pflegeEndpreis = PFLEGE_BASISPREIS * (1 - pflegeRabattClamped / 100);
   const pflegeVermittlungFreigegeben =
-    weiterleitenPopupVersion === 3 && !pflegeEntfernt && pflegeVertragBestaetigt;
+    wirksamePopupVersion === 3 && !pflegeEntfernt && pflegeVertragBestaetigt;
   const [weiterleitenV3Tools, setWeiterleitenV3Tools] = useState({
     pflegegradChecked: true,
     kontaktPraeferenzenChecked: false,
@@ -1227,7 +1237,84 @@ const AnfrageSitzlift: React.FC = () => {
   // muss der mündliche Kaufvertrag bestätigt sein, bevor abgeschickt werden kann.
   // Will man die kostenpflichtige Anbietervermittlung nicht, muss das Produkt
   // stattdessen entfernt (geschlossen) werden.
-  const pflegeVertragErforderlich = weiterleitenPopupVersion === 3 && !pflegeEntfernt;
+  const pflegeVertragErforderlich = wirksamePopupVersion === 3 && !pflegeEntfernt;
+
+  // Kostenpflichtige Anbietervermittlung (Preis, Rabatt, mündl. Kaufvertrag).
+  // Als Konstante ausgelagert, weil sie je nach Variante an zwei Stellen
+  // gerendert wird: Variante 3 unterhalb des Rasters, Variante 4 oben in der
+  // Produktzeile (statt der Anbieter-Kacheln).
+  const pflegeKostenBlock = (
+    <div
+      className={`weiterleiten-pflege-kosten${
+        pflegeVermittlungFreigegeben ? ' weiterleiten-pflege-kosten--freigegeben' : ''
+      }`}
+    >
+      <div className="weiterleiten-pflege-kosten-kopf">
+        {!istPopup4Variante1 && (
+          <span className="weiterleiten-pflege-kosten-icon" aria-hidden="true">
+            {pflegeVermittlungFreigegeben ? '🔓' : '🔒'}
+          </span>
+        )}
+        <div>
+          <div className="weiterleiten-pflege-kosten-titel">
+            {istPopup4Variante1 ? 'Aktuell keine Verfügbarkeiten' : 'Kostenpflichtige Anbietervermittlung'}
+          </div>
+          <p className="weiterleiten-pflege-kosten-text">
+            Wir können für den Klienten die individuelle Suche und Auswahl eines
+            passenden Anbieters übernehmen. Dafür berechnen wir eine einmalige
+            Aufwandsentschädigung von {formatEuro(PFLEGE_BASISPREIS)} €.
+          </p>
+        </div>
+      </div>
+
+      {/* Preis + Rabatt: regulär 100 €, Berater kann Rabatt gewähren */}
+      <div className="weiterleiten-pflege-preisblock">
+        <div className="weiterleiten-pflege-preiszeile">
+          <span className="weiterleiten-pflege-preis-label">Aufwandsentschädigung</span>
+          {pflegeRabattClamped > 0 && (
+            <span className="weiterleiten-pflege-preis-alt">{formatEuro(PFLEGE_BASISPREIS)} €</span>
+          )}
+          <span className="weiterleiten-pflege-preis-endbetrag">{formatEuro(pflegeEndpreis)} €</span>
+          {pflegeRabattClamped > 0 && (
+            <span className="weiterleiten-pflege-preis-rabattpill">−{pflegeRabattClamped} % Rabatt</span>
+          )}
+        </div>
+
+        <div className="weiterleiten-pflege-rabatt">
+          <span className="weiterleiten-pflege-rabatt-label">Rabatt einräumen</span>
+          <div className="weiterleiten-pflege-rabatt-buttons">
+            {PFLEGE_RABATT_STUFEN.map((stufe) => (
+              <button
+                key={stufe}
+                type="button"
+                className={pflegeRabattProzent === stufe ? 'is-active' : ''}
+                onClick={() => setPflegeRabattProzent(stufe)}
+              >
+                {stufe === 0 ? 'Kein Rabatt' : `${stufe} %`}
+              </button>
+            ))}
+          </div>
+          <div className="weiterleiten-pflege-rabatt-hinweis">
+            Du darfst bis zu {PFLEGE_MAX_RABATT} % Rabatt gewähren.
+          </div>
+        </div>
+      </div>
+
+      <label
+        className={`weiterleiten-consent weiterleiten-pflege-vertrag ${
+          !pflegeVertragBestaetigt ? 'weiterleiten-option-unchecked' : ''
+        }`}
+      >
+        <input
+          type="checkbox"
+          checked={pflegeVertragBestaetigt}
+          onChange={(e) => setPflegeVertragBestaetigt(e.target.checked)}
+        />
+        Der Klient hat der kostenpflichtigen Anbietervermittlung zu{' '}
+        {formatEuro(pflegeEndpreis)} € telefonisch zugestimmt (mündlicher Kaufvertrag).
+      </label>
+    </div>
+  );
 
   const weiterleitenAbschickenEnabled =
     (effektivePopupVersion === 1
@@ -2061,12 +2148,12 @@ p { margin: 0 0 6pt 0; }
                     >
                       {effektivePopupVersion === 1 && (
                         <>
-                          {(weiterleitenPopupVersion !== 3 || !sitzliftEntfernt) && (
+                          {(wirksamePopupVersion !== 3 || !sitzliftEntfernt) && (
                             <>
                           <div className="weiterleiten-column-title">
                             <div className="weiterleiten-spaltenkopf">
                               <span>Sitzlift</span>
-                              {weiterleitenPopupVersion === 3 && (
+                              {wirksamePopupVersion === 3 && (
                                 <span className="weiterleiten-preis-badge weiterleiten-preis-badge--frei">
                                   Kostenfrei
                                 </span>
@@ -2115,7 +2202,7 @@ p { margin: 0 0 6pt 0; }
                           )}
 
                           {/* Zweite Zeile – nur Popup-Variante 3: Vollstationäre Pflege (kostenpflichtig) */}
-                          {weiterleitenPopupVersion === 3 && !pflegeEntfernt && (() => {
+                          {wirksamePopupVersion === 3 && !pflegeEntfernt && (() => {
                             const pflegeAnbieter = [
                               'CuraVita Pflegeresidenz',
                               'SeniorenResidenz Sonnengarten',
@@ -2148,28 +2235,36 @@ p { margin: 0 0 6pt 0; }
                                     </button>
                                   </div>
                                 </div>
-                                {pflegeAnbieter.map((name) => (
-                                  <div
-                                    key={name}
-                                    className={`weiterleiten-anbieter-card selected weiterleiten-anbieter-card--pflege${
-                                      pflegeVermittlungFreigegeben ? '' : ' weiterleiten-anbieter-card--gesperrt'
-                                    }`}
-                                  >
-                                    <div className="anbieter-head">
-                                      <span className="anbieter-name">{name}</span>
-                                      <span
-                                        className="anbieter-check"
-                                        title={
-                                          pflegeVermittlungFreigegeben
-                                            ? 'Freigegeben – Anfrage geht an diesen Anbieter'
-                                            : 'Gesperrt – erst nach Preiserfassung & Kaufvertrag'
-                                        }
-                                      >
-                                        {pflegeVermittlungFreigegeben ? '✓' : '🔒'}
-                                      </span>
-                                    </div>
+                                {istPopup4Variante1 ? (
+                                  /* Variante 4: statt der Anbieter-Kacheln steht der
+                                     Kostenblock direkt in der Produktzeile (Spalten 2–5). */
+                                  <div className="weiterleiten-pflege-kosten-slot">
+                                    {pflegeKostenBlock}
                                   </div>
-                                ))}
+                                ) : (
+                                  pflegeAnbieter.map((name) => (
+                                    <div
+                                      key={name}
+                                      className={`weiterleiten-anbieter-card selected weiterleiten-anbieter-card--pflege${
+                                        pflegeVermittlungFreigegeben ? '' : ' weiterleiten-anbieter-card--gesperrt'
+                                      }`}
+                                    >
+                                      <div className="anbieter-head">
+                                        <span className="anbieter-name">{name}</span>
+                                        <span
+                                          className="anbieter-check"
+                                          title={
+                                            pflegeVermittlungFreigegeben
+                                              ? 'Freigegeben – Anfrage geht an diesen Anbieter'
+                                              : 'Gesperrt – erst nach Preiserfassung & Kaufvertrag'
+                                          }
+                                        >
+                                          {pflegeVermittlungFreigegeben ? '✓' : '🔒'}
+                                        </span>
+                                      </div>
+                                    </div>
+                                  ))
+                                )}
                               </>
                             );
                           })()}
@@ -2338,78 +2433,10 @@ p { margin: 0 0 6pt 0; }
                       )}
                     </div>
 
-                    {/* Popup-Variante 3: kostenpflichtige Vermittlung „Vollstationäre Pflege" */}
-                    {weiterleitenPopupVersion === 3 && !pflegeEntfernt && (
-                      <div
-                        className={`weiterleiten-pflege-kosten${
-                          pflegeVermittlungFreigegeben ? ' weiterleiten-pflege-kosten--freigegeben' : ''
-                        }`}
-                      >
-                        <div className="weiterleiten-pflege-kosten-kopf">
-                          <span className="weiterleiten-pflege-kosten-icon" aria-hidden="true">
-                            {pflegeVermittlungFreigegeben ? '🔓' : '🔒'}
-                          </span>
-                          <div>
-                            <div className="weiterleiten-pflege-kosten-titel">
-                              Kostenpflichtige Anbietervermittlung
-                            </div>
-                            <p className="weiterleiten-pflege-kosten-text">
-                              Wir können für den Klienten die individuelle Suche und Auswahl eines
-                              passenden Anbieters übernehmen. Dafür berechnen wir eine einmalige
-                              Aufwandsentschädigung von {formatEuro(PFLEGE_BASISPREIS)} €.
-                            </p>
-                          </div>
-                        </div>
-
-                        {/* Preis + Rabatt: regulär 100 €, Berater kann Rabatt gewähren */}
-                        <div className="weiterleiten-pflege-preisblock">
-                          <div className="weiterleiten-pflege-preiszeile">
-                            <span className="weiterleiten-pflege-preis-label">Aufwandsentschädigung</span>
-                            {pflegeRabattClamped > 0 && (
-                              <span className="weiterleiten-pflege-preis-alt">{formatEuro(PFLEGE_BASISPREIS)} €</span>
-                            )}
-                            <span className="weiterleiten-pflege-preis-endbetrag">{formatEuro(pflegeEndpreis)} €</span>
-                            {pflegeRabattClamped > 0 && (
-                              <span className="weiterleiten-pflege-preis-rabattpill">−{pflegeRabattClamped} % Rabatt</span>
-                            )}
-                          </div>
-
-                          <div className="weiterleiten-pflege-rabatt">
-                            <span className="weiterleiten-pflege-rabatt-label">Rabatt einräumen</span>
-                            <div className="weiterleiten-pflege-rabatt-buttons">
-                              {PFLEGE_RABATT_STUFEN.map((stufe) => (
-                                <button
-                                  key={stufe}
-                                  type="button"
-                                  className={pflegeRabattProzent === stufe ? 'is-active' : ''}
-                                  onClick={() => setPflegeRabattProzent(stufe)}
-                                >
-                                  {stufe === 0 ? 'Kein Rabatt' : `${stufe} %`}
-                                </button>
-                              ))}
-                            </div>
-                            <div className="weiterleiten-pflege-rabatt-hinweis">
-                              Du darfst bis zu {PFLEGE_MAX_RABATT} % Rabatt gewähren.
-                            </div>
-                          </div>
-                        </div>
-
-                        <label
-                          className={`weiterleiten-consent weiterleiten-pflege-vertrag ${
-                            !pflegeVertragBestaetigt ? 'weiterleiten-option-unchecked' : ''
-                          }`}
-                        >
-                          <input
-                            type="checkbox"
-                            checked={pflegeVertragBestaetigt}
-                            onChange={(e) => setPflegeVertragBestaetigt(e.target.checked)}
-                          />
-                          Der Klient hat der kostenpflichtigen Anbietervermittlung zu{' '}
-                          {formatEuro(pflegeEndpreis)} € telefonisch zugestimmt (mündlicher Kaufvertrag).
-                        </label>
-
-                      </div>
-                    )}
+                    {/* Popup-Variante 3: kostenpflichtige Vermittlung „Vollstationäre Pflege".
+                        In Variante 4 steht dieser Block oben in der Produktzeile statt hier. */}
+                    {wirksamePopupVersion === 3 && !pflegeEntfernt && !istPopup4Variante1 &&
+                      pflegeKostenBlock}
 
                     <div className="weiterleiten-klient-block">
                       {effektivePopupVersion === 1 && (
