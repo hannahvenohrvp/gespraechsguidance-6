@@ -164,7 +164,7 @@ Ab sofort übernehmen wir die individuelle Suche passender Anbieter, um eine gee
 </tr>
 <tr>
 <td style="padding:8px 25px 20px 25px; font-family:Arial,Helvetica,Tahoma,sans-serif; font-size:13px; line-height:18px; color:#8a887f;">
-Verfügbare Zahlungsarten: Klarna Rechnung, PayPal, Kreditkarte, Apple Pay und Google Pay.
+Verfügbare Zahlungsarten: PayPal, Überweisung, Kredit-/ Debitkarte.
 </td>
 </tr>
 </table>

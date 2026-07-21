@@ -1074,6 +1074,8 @@ const AnfrageSitzlift: React.FC = () => {
    *  Zustand von Variante 2 (Informationsbroschüre). */
   const [sitzliftEntfernt, setSitzliftEntfernt] = useState(false);
   const [pflegeEntfernt, setPflegeEntfernt] = useState(false);
+  /** Popup-Variante 4: zusätzliches Produkt „Tagespflege" (einzeln schließbar). */
+  const [verhinderungKurzzeitEntfernt, setVerhinderungKurzzeitEntfernt] = useState(false);
   const [weiterleitenPopupVersion, setWeiterleitenPopupVersion] = useState<1 | 2 | 3 | 4 | 5>(1);
   // Neue Popup-Variante 3 ist (zunächst) identisch zu Variante 1. Dadurch rücken
   // die bisherigen Varianten nach hinten: die alte Variante 3 ist jetzt 4, die
@@ -1089,16 +1091,34 @@ const AnfrageSitzlift: React.FC = () => {
   // Popup-Logik rechnet jedoch mit `wirksamePopupVersion`. Zum Abweichen später hier bzw.
   // an den `wirksamePopupVersion === …`-Stellen verzweigen.
   const wirksamePopupVersion =
-    appVariant === 1 && weiterleitenPopupVersion === 4 ? 3 : weiterleitenPopupVersion;
-  // Popup-Variante 4 (App-Variante 1) weicht ab: die Anbieter-Kacheln der
-  // Vollstationären Pflege entfallen; stattdessen steht der Kostenblock direkt
-  // oben in der Produktzeile (statt unterhalb des Rasters).
-  const istPopup4Variante1 = appVariant === 1 && weiterleitenPopupVersion === 4;
+    appVariant === 1 && (weiterleitenPopupVersion === 4 || weiterleitenPopupVersion === 5)
+      ? 3
+      : weiterleitenPopupVersion;
+  // App-Variante 1: Popup-Varianten 3, 4 UND 5 zeigen dieselbe Sonderansicht.
+  // Die Anbieter-Kacheln der Vollstationären Pflege entfallen; stattdessen steht der
+  // Kostenblock („Aktuell keine Verfügbarkeiten", fester Preis 99 €, ohne Rabatt,
+  // Abschicken öffnet die E-Mail-Vorschau) direkt oben in der Produktzeile.
+  const istSonderansichtV1 =
+    appVariant === 1 &&
+    (weiterleitenPopupVersion === 3 ||
+      weiterleitenPopupVersion === 4 ||
+      weiterleitenPopupVersion === 5);
+  // Nur Popup-Variante 4 (App-Variante 1): zusätzliches Produkt „Tagespflege".
+  // (Popup-Variante 5 zeigt nur „Vollstationäre Pflege".)
+  const istTagespflegeV1 = appVariant === 1 && weiterleitenPopupVersion === 4;
+  // Nur Popup-Variante 5 (App-Variante 1): Produkt bereits gebucht – reiner Infotext
+  // (keine Aufwandsentschädigung, keine Zustimmung/Hinweis).
+  const istPopup5V1 = appVariant === 1 && weiterleitenPopupVersion === 5;
+  // Die kostenpflichtige Spalte gilt erst als entfernt, wenn ALLE ihre Produkte
+  // geschlossen sind (Variante 4: Vollstationäre Pflege UND Tagespflege).
+  const pflegeSpalteEntfernt = istTagespflegeV1
+    ? pflegeEntfernt && verhinderungKurzzeitEntfernt
+    : pflegeEntfernt;
   const produkteWeggeklickt =
     wirksamePopupVersion === 1
       ? sitzliftEntfernt
       : wirksamePopupVersion === 3
-        ? sitzliftEntfernt && pflegeEntfernt
+        ? sitzliftEntfernt && pflegeSpalteEntfernt
         : false;
   const effektivePopupVersion = (
     wirksamePopupVersion === 1 || wirksamePopupVersion === 3
@@ -1116,11 +1136,14 @@ const AnfrageSitzlift: React.FC = () => {
   // wenn der mündliche Kaufvertrag bestätigt wurde. Der Sitzlift bleibt davon
   // unberührt (kostenfrei, da Partneranbieter den Lead zahlt).
   const pflegeRabattClamped = Math.min(Math.max(pflegeRabattProzent, 0), PFLEGE_MAX_RABATT);
-  const pflegeEndpreis = istPopup4Variante1
+  const pflegeEndpreis = istSonderansichtV1
     ? PFLEGE_FIXPREIS_V4
     : PFLEGE_BASISPREIS * (1 - pflegeRabattClamped / 100);
   const pflegeVermittlungFreigegeben =
-    wirksamePopupVersion === 3 && !pflegeEntfernt && pflegeVertragBestaetigt;
+    wirksamePopupVersion === 3 && !pflegeSpalteEntfernt && pflegeVertragBestaetigt;
+  // Popup-Variante 5: bereits gebucht → Badge zeigt direkt „Freigegeben"
+  // (kein „Kostenpflichtig", kein Checkbox-Toggle).
+  const pflegeFreigegebenAnzeige = pflegeVermittlungFreigegeben || istPopup5V1;
   const [weiterleitenV3Tools, setWeiterleitenV3Tools] = useState({
     pflegegradChecked: true,
     kontaktPraeferenzenChecked: false,
@@ -1147,6 +1170,7 @@ const AnfrageSitzlift: React.FC = () => {
     if (isWeiterleitenModalOpen) {
       setSitzliftEntfernt(false);
       setPflegeEntfernt(false);
+      setVerhinderungKurzzeitEntfernt(false);
     }
   }, [isWeiterleitenModalOpen]);
 
@@ -1244,7 +1268,8 @@ const AnfrageSitzlift: React.FC = () => {
   // muss der mündliche Kaufvertrag bestätigt sein, bevor abgeschickt werden kann.
   // Will man die kostenpflichtige Anbietervermittlung nicht, muss das Produkt
   // stattdessen entfernt (geschlossen) werden.
-  const pflegeVertragErforderlich = wirksamePopupVersion === 3 && !pflegeEntfernt;
+  const pflegeVertragErforderlich =
+    wirksamePopupVersion === 3 && !pflegeSpalteEntfernt && !istPopup5V1;
 
   // Kostenpflichtige Anbietervermittlung (Preis, Rabatt, mündl. Kaufvertrag).
   // Als Konstante ausgelagert, weil sie je nach Variante an zwei Stellen
@@ -1257,7 +1282,7 @@ const AnfrageSitzlift: React.FC = () => {
       }`}
     >
       <div className="weiterleiten-pflege-kosten-kopf">
-        {!istPopup4Variante1 && (
+        {!istSonderansichtV1 && (
           <span className="weiterleiten-pflege-kosten-icon" aria-hidden="true">
             {pflegeVermittlungFreigegeben ? '🔓' : '🔒'}
           </span>
@@ -1265,24 +1290,30 @@ const AnfrageSitzlift: React.FC = () => {
         <div>
           <div
             className={`weiterleiten-pflege-kosten-titel${
-              istPopup4Variante1 ? ' weiterleiten-pflege-kosten-titel--abstand' : ''
+              istSonderansichtV1 ? ' weiterleiten-pflege-kosten-titel--abstand' : ''
             }`}
           >
-            {istPopup4Variante1 ? 'Aktuell keine Verfügbarkeiten' : 'Kostenpflichtige Anbietervermittlung'}
+            {istSonderansichtV1 ? 'Aktuell keine Verfügbarkeiten' : 'Kostenpflichtige Anbietervermittlung'}
           </div>
           <p className="weiterleiten-pflege-kosten-text">
-            Wir können die{' '}
-            {istPopup4Variante1 ? (
-              <strong>individuelle Suche und Auswahl eines passenden Anbieters</strong>
+            {istPopup5V1 ? (
+              <>
+                Der Klient hat <strong>bereits Pflegehilfe+ gebucht</strong>.
+                <br />
+                <br />
+                Wir übernehmen die individuelle Suche und Auswahl eines passenden Anbieters für den Klienten.
+              </>
             ) : (
-              <>individuelle Suche und Auswahl eines passenden Anbieters</>
-            )}{' '}
-            für den Klienten übernehmen.
-            {!istPopup4Variante1 && (
-              <> Dafür berechnen wir eine einmalige Aufwandsentschädigung von {formatEuro(PFLEGE_BASISPREIS)} €.</>
+              <>
+                Wir können die individuelle Suche und Auswahl eines passenden
+                Anbieters für den Klienten übernehmen.
+                {!istSonderansichtV1 && (
+                  <> Dafür berechnen wir eine einmalige Aufwandsentschädigung von {formatEuro(PFLEGE_BASISPREIS)} €.</>
+                )}
+              </>
             )}
           </p>
-          {istPopup4Variante1 && (
+          {istSonderansichtV1 && !istPopup5V1 && (
             <p className="weiterleiten-pflege-kosten-text weiterleiten-pflege-kosten-fee">
               Dafür berechnen wir eine einmalige{' '}
               <strong>Aufwandsentschädigung von {formatEuro(PFLEGE_FIXPREIS_V4)} €</strong>.
@@ -1293,7 +1324,7 @@ const AnfrageSitzlift: React.FC = () => {
 
       {/* Preis + Rabatt: regulär 100 €, Berater kann Rabatt gewähren.
           Popup-Variante 4: entfällt komplett (fester Preis steht bereits im Text). */}
-      {!istPopup4Variante1 && (
+      {!istSonderansichtV1 && (
         <div className="weiterleiten-pflege-preisblock">
           <div className="weiterleiten-pflege-preiszeile">
             <span className="weiterleiten-pflege-preis-label">Aufwandsentschädigung</span>
@@ -1327,21 +1358,23 @@ const AnfrageSitzlift: React.FC = () => {
         </div>
       )}
 
-      <label
-        className={`weiterleiten-consent weiterleiten-pflege-vertrag ${
-          istPopup4Variante1 ? 'weiterleiten-pflege-vertrag--abstand ' : ''
-        }${!pflegeVertragBestaetigt ? 'weiterleiten-option-unchecked' : ''}`}
-      >
-        <input
-          type="checkbox"
-          checked={pflegeVertragBestaetigt}
-          onChange={(e) => setPflegeVertragBestaetigt(e.target.checked)}
-        />
-        Der Klient hat der kostenpflichtigen Anbietervermittlung zu{' '}
-        {formatEuro(pflegeEndpreis)} € {!istPopup4Variante1 ? 'telefonisch ' : ''}zugestimmt
-        {!istPopup4Variante1 ? ' (mündlicher Kaufvertrag)' : ''}.
-      </label>
-      {istPopup4Variante1 && (
+      {!istPopup5V1 && (
+        <label
+          className={`weiterleiten-consent weiterleiten-pflege-vertrag ${
+            istSonderansichtV1 ? 'weiterleiten-pflege-vertrag--abstand ' : ''
+          }${!pflegeVertragBestaetigt ? 'weiterleiten-option-unchecked' : ''}`}
+        >
+          <input
+            type="checkbox"
+            checked={pflegeVertragBestaetigt}
+            onChange={(e) => setPflegeVertragBestaetigt(e.target.checked)}
+          />
+          Der Klient hat der kostenpflichtigen Anbietervermittlung zu{' '}
+          {formatEuro(pflegeEndpreis)} € {!istSonderansichtV1 ? 'telefonisch ' : ''}zugestimmt
+          {!istSonderansichtV1 ? ' (mündlicher Kaufvertrag)' : ''}.
+        </label>
+      )}
+      {istSonderansichtV1 && !istPopup5V1 && (
         <p className="weiterleiten-pflege-deckungsbeitrag-hinweis">
           <strong>Hinweis:</strong> Der Zahlungseingang erhöht den Deckungsbeitrag. Erfolgt
           keine Zahlung durch den Klienten, reduziert sich der Deckungsbeitrag.
@@ -1524,7 +1557,7 @@ const AnfrageSitzlift: React.FC = () => {
     { value: 'betreutes-wohnen', label: 'Betreutes Wohnen', maxAN: 2 },
     { value: 'stationaere-intensivpflege', label: 'Stationäre Intensivpflege', maxAN: 0 },
     { value: 'tagespflege', label: 'Tagespflege', maxAN: 3 },
-    { value: 'verhinderungs-kurzzeitpflege', label: 'Verhinderungs-/ Kurzzeitpflege', maxAN: 0 },
+    { value: 'verhinderungs-kurzzeitpflege', label: 'Tagespflege', maxAN: 0 },
     { value: 'vollstationaere-pflege', label: 'Vollstationäre Pflege', maxAN: 0 },
   ];
 
@@ -2201,22 +2234,24 @@ p { margin: 0 0 6pt 0; }
                             <>
                           <div className="weiterleiten-column-title">
                             <div className="weiterleiten-spaltenkopf">
-                              <span>Sitzlift</span>
                               {wirksamePopupVersion === 3 && (
-                                <span className="weiterleiten-preis-badge weiterleiten-preis-badge--frei">
+                                <span className="weiterleiten-preis-badge weiterleiten-preis-badge--frei weiterleiten-preis-badge--ecke">
                                   Kostenfrei
                                 </span>
                               )}
-                              <button
-                                type="button"
-                                className="weiterleiten-produkt-entfernen"
-                                onClick={() => setSitzliftEntfernt(true)}
-                                aria-label="Sitzlift aus der Weiterleitung entfernen"
-                                title="Sitzlift aus der Weiterleitung entfernen"
-                              >
-                                <span className="weiterleiten-produkt-entfernen-icon" aria-hidden="true">✕</span>
-                                Schließen
-                              </button>
+                              <div className="weiterleiten-produkt-zeile">
+                                <span className="weiterleiten-spaltenkopf-name">Sitzlift</span>
+                                <button
+                                  type="button"
+                                  className="weiterleiten-produkt-entfernen"
+                                  onClick={() => setSitzliftEntfernt(true)}
+                                  aria-label="Sitzlift aus der Weiterleitung entfernen"
+                                  title="Sitzlift aus der Weiterleitung entfernen"
+                                >
+                                  <span className="weiterleiten-produkt-entfernen-icon" aria-hidden="true">✕</span>
+                                  Schließen
+                                </button>
+                              </div>
                             </div>
                           </div>
                           <div className="weiterleiten-anbieter-card selected">
@@ -2251,7 +2286,7 @@ p { margin: 0 0 6pt 0; }
                           )}
 
                           {/* Zweite Zeile – nur Popup-Variante 3: Vollstationäre Pflege (kostenpflichtig) */}
-                          {wirksamePopupVersion === 3 && !pflegeEntfernt && (() => {
+                          {wirksamePopupVersion === 3 && !pflegeSpalteEntfernt && (() => {
                             const pflegeAnbieter = [
                               'CuraVita Pflegeresidenz',
                               'SeniorenResidenz Sonnengarten',
@@ -2262,29 +2297,48 @@ p { margin: 0 0 6pt 0; }
                               <>
                                 <div className="weiterleiten-column-title">
                                   <div className="weiterleiten-spaltenkopf">
-                                    <span>Vollstationäre Pflege</span>
                                     <span
-                                      className={`weiterleiten-preis-badge ${
-                                        pflegeVermittlungFreigegeben
+                                      className={`weiterleiten-preis-badge weiterleiten-preis-badge--ecke ${
+                                        pflegeFreigegebenAnzeige
                                           ? 'weiterleiten-preis-badge--freigegeben'
                                           : 'weiterleiten-preis-badge--kostenpflichtig'
                                       }`}
                                     >
-                                      {pflegeVermittlungFreigegeben ? '🔓 Freigegeben' : '🔒 Kostenpflichtig'}
+                                      {pflegeFreigegebenAnzeige ? '🔓 Freigegeben' : '🔒 Kostenpflichtig'}
                                     </span>
-                                    <button
-                                      type="button"
-                                      className="weiterleiten-produkt-entfernen"
-                                      onClick={() => setPflegeEntfernt(true)}
-                                      aria-label="Vollstationäre Pflege aus der Weiterleitung entfernen"
-                                      title="Vollstationäre Pflege aus der Weiterleitung entfernen"
-                                    >
-                                      <span className="weiterleiten-produkt-entfernen-icon" aria-hidden="true">✕</span>
-                                      Schließen
-                                    </button>
+                                    {!pflegeEntfernt && (
+                                      <div className="weiterleiten-produkt-zeile">
+                                        <span className="weiterleiten-spaltenkopf-name">Vollstationäre Pflege</span>
+                                        <button
+                                          type="button"
+                                          className="weiterleiten-produkt-entfernen"
+                                          onClick={() => setPflegeEntfernt(true)}
+                                          aria-label="Vollstationäre Pflege aus der Weiterleitung entfernen"
+                                          title="Vollstationäre Pflege aus der Weiterleitung entfernen"
+                                        >
+                                          <span className="weiterleiten-produkt-entfernen-icon" aria-hidden="true">✕</span>
+                                          Schließen
+                                        </button>
+                                      </div>
+                                    )}
+                                    {istTagespflegeV1 && !verhinderungKurzzeitEntfernt && (
+                                      <div className="weiterleiten-produkt-zeile">
+                                        <span className="weiterleiten-spaltenkopf-name">Tagespflege</span>
+                                        <button
+                                          type="button"
+                                          className="weiterleiten-produkt-entfernen"
+                                          onClick={() => setVerhinderungKurzzeitEntfernt(true)}
+                                          aria-label="Tagespflege aus der Weiterleitung entfernen"
+                                          title="Tagespflege aus der Weiterleitung entfernen"
+                                        >
+                                          <span className="weiterleiten-produkt-entfernen-icon" aria-hidden="true">✕</span>
+                                          Schließen
+                                        </button>
+                                      </div>
+                                    )}
                                   </div>
                                 </div>
-                                {istPopup4Variante1 ? (
+                                {istSonderansichtV1 ? (
                                   /* Variante 4: statt der Anbieter-Kacheln steht der
                                      Kostenblock direkt in der Produktzeile (Spalten 2–5). */
                                   <div className="weiterleiten-pflege-kosten-slot">
@@ -2484,7 +2538,7 @@ p { margin: 0 0 6pt 0; }
 
                     {/* Popup-Variante 3: kostenpflichtige Vermittlung „Vollstationäre Pflege".
                         In Variante 4 steht dieser Block oben in der Produktzeile statt hier. */}
-                    {wirksamePopupVersion === 3 && !pflegeEntfernt && !istPopup4Variante1 &&
+                    {wirksamePopupVersion === 3 && !pflegeSpalteEntfernt && !istSonderansichtV1 &&
                       pflegeKostenBlock}
 
                     <div className="weiterleiten-klient-block">
@@ -2616,7 +2670,7 @@ p { margin: 0 0 6pt 0; }
                             disabled={!weiterleitenAbschickenEnabled}
                             onClick={() => {
                               setIsWeiterleitenModalOpen(false);
-                              if (istPopup4Variante1) {
+                              if (istSonderansichtV1) {
                                 // Verdeutlicht, dass an den Klienten eine E-Mail versendet wird:
                                 // Öffnet die versendete E-Mail als eigene Seite (weißer Hintergrund).
                                 oeffnePflegePlusEmail();

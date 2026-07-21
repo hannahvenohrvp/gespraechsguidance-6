@@ -164,7 +164,7 @@ export const PFLEGE_PLUS_LANDINGPAGE_HTML = `<!doctype html>
 
   <div class="pay sel">
     <span class="radio"></span>
-    <span class="name">Sepa Lastschrift</span>
+    <span class="name">Überweisung</span>
     <span class="brand sepa">SEPA</span>
   </div>
 
