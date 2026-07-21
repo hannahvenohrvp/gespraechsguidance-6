@@ -2,6 +2,9 @@ import React, { useState, useRef, useEffect, useLayoutEffect, useCallback } from
 import { createPortal } from 'react-dom';
 import './AnfrageSitzlift.css';
 import { isCrmAdminUser } from '../config/crmAdmin';
+import { PFLEGE_PLUS_EMAIL_HTML, buildEmailVergleichHtml } from './pflegePlusEmail';
+import { ANBIETERVORSCHLAEGE_EMAIL_HTML } from './anbietervorschlaegeEmail';
+import { PFLEGE_PLUS_LANDINGPAGE_HTML } from './pflegePlusLandingpage';
 import Dashboard from './Dashboard';
 
 // SelectField Component für Single- und Multiselect
@@ -1260,32 +1263,49 @@ const AnfrageSitzlift: React.FC = () => {
           </span>
         )}
         <div>
-          <div className="weiterleiten-pflege-kosten-titel">
+          <div
+            className={`weiterleiten-pflege-kosten-titel${
+              istPopup4Variante1 ? ' weiterleiten-pflege-kosten-titel--abstand' : ''
+            }`}
+          >
             {istPopup4Variante1 ? 'Aktuell keine Verfügbarkeiten' : 'Kostenpflichtige Anbietervermittlung'}
           </div>
           <p className="weiterleiten-pflege-kosten-text">
-            Wir können für den Klienten die individuelle Suche und Auswahl eines
-            passenden Anbieters übernehmen. Dafür berechnen wir eine einmalige
-            Aufwandsentschädigung von {formatEuro(istPopup4Variante1 ? PFLEGE_FIXPREIS_V4 : PFLEGE_BASISPREIS)} €.
+            Wir können die{' '}
+            {istPopup4Variante1 ? (
+              <strong>individuelle Suche und Auswahl eines passenden Anbieters</strong>
+            ) : (
+              <>individuelle Suche und Auswahl eines passenden Anbieters</>
+            )}{' '}
+            für den Klienten übernehmen.
+            {!istPopup4Variante1 && (
+              <> Dafür berechnen wir eine einmalige Aufwandsentschädigung von {formatEuro(PFLEGE_BASISPREIS)} €.</>
+            )}
           </p>
+          {istPopup4Variante1 && (
+            <p className="weiterleiten-pflege-kosten-text weiterleiten-pflege-kosten-fee">
+              Dafür berechnen wir eine einmalige{' '}
+              <strong>Aufwandsentschädigung von {formatEuro(PFLEGE_FIXPREIS_V4)} €</strong>.
+            </p>
+          )}
         </div>
       </div>
 
-      {/* Preis + Rabatt: regulär 100 €, Berater kann Rabatt gewähren */}
-      <div className="weiterleiten-pflege-preisblock">
-        <div className="weiterleiten-pflege-preiszeile">
-          <span className="weiterleiten-pflege-preis-label">Aufwandsentschädigung</span>
-          {!istPopup4Variante1 && pflegeRabattClamped > 0 && (
-            <span className="weiterleiten-pflege-preis-alt">{formatEuro(PFLEGE_BASISPREIS)} €</span>
-          )}
-          <span className="weiterleiten-pflege-preis-endbetrag">{formatEuro(pflegeEndpreis)} €</span>
-          {!istPopup4Variante1 && pflegeRabattClamped > 0 && (
-            <span className="weiterleiten-pflege-preis-rabattpill">−{pflegeRabattClamped} % Rabatt</span>
-          )}
-        </div>
+      {/* Preis + Rabatt: regulär 100 €, Berater kann Rabatt gewähren.
+          Popup-Variante 4: entfällt komplett (fester Preis steht bereits im Text). */}
+      {!istPopup4Variante1 && (
+        <div className="weiterleiten-pflege-preisblock">
+          <div className="weiterleiten-pflege-preiszeile">
+            <span className="weiterleiten-pflege-preis-label">Aufwandsentschädigung</span>
+            {pflegeRabattClamped > 0 && (
+              <span className="weiterleiten-pflege-preis-alt">{formatEuro(PFLEGE_BASISPREIS)} €</span>
+            )}
+            <span className="weiterleiten-pflege-preis-endbetrag">{formatEuro(pflegeEndpreis)} €</span>
+            {pflegeRabattClamped > 0 && (
+              <span className="weiterleiten-pflege-preis-rabattpill">−{pflegeRabattClamped} % Rabatt</span>
+            )}
+          </div>
 
-        {/* Rabatt-Teil nur außerhalb Popup-Variante 4 (dort fester Preis ohne Rabatt) */}
-        {!istPopup4Variante1 && (
           <div className="weiterleiten-pflege-rabatt">
             <span className="weiterleiten-pflege-rabatt-label">Rabatt einräumen</span>
             <div className="weiterleiten-pflege-rabatt-buttons">
@@ -1304,13 +1324,13 @@ const AnfrageSitzlift: React.FC = () => {
               Du darfst bis zu {PFLEGE_MAX_RABATT} % Rabatt gewähren.
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       <label
         className={`weiterleiten-consent weiterleiten-pflege-vertrag ${
-          !pflegeVertragBestaetigt ? 'weiterleiten-option-unchecked' : ''
-        }`}
+          istPopup4Variante1 ? 'weiterleiten-pflege-vertrag--abstand ' : ''
+        }${!pflegeVertragBestaetigt ? 'weiterleiten-option-unchecked' : ''}`}
       >
         <input
           type="checkbox"
@@ -1318,8 +1338,15 @@ const AnfrageSitzlift: React.FC = () => {
           onChange={(e) => setPflegeVertragBestaetigt(e.target.checked)}
         />
         Der Klient hat der kostenpflichtigen Anbietervermittlung zu{' '}
-        {formatEuro(pflegeEndpreis)} € telefonisch zugestimmt (mündlicher Kaufvertrag).
+        {formatEuro(pflegeEndpreis)} € {!istPopup4Variante1 ? 'telefonisch ' : ''}zugestimmt
+        {!istPopup4Variante1 ? ' (mündlicher Kaufvertrag)' : ''}.
       </label>
+      {istPopup4Variante1 && (
+        <p className="weiterleiten-pflege-deckungsbeitrag-hinweis">
+          <strong>Hinweis:</strong> Der Zahlungseingang erhöht den Deckungsbeitrag. Erfolgt
+          keine Zahlung durch den Klienten, reduziert sich der Deckungsbeitrag.
+        </p>
+      )}
     </div>
   );
 
@@ -1335,6 +1362,21 @@ const AnfrageSitzlift: React.FC = () => {
         ? zustimmungNachgespraechBeratung
         : true) &&
     (!pflegeVertragErforderlich || pflegeVertragBestaetigt);
+
+  // Popup-Variante 4: nach dem Abschicken die versendete E-Mail in einer eigenen Seite
+  // (neuer Tab) öffnen – als Vergleichsansicht mit zwei Mails nebeneinander.
+  const oeffnePflegePlusEmail = () => {
+    const emailFenster = window.open('', '_blank');
+    if (!emailFenster) return;
+    const seite = buildEmailVergleichHtml(
+      { label: 'Buchungsbestätigung & Zahlung', html: PFLEGE_PLUS_EMAIL_HTML },
+      { label: 'Anbietervorschläge', html: ANBIETERVORSCHLAEGE_EMAIL_HTML },
+      PFLEGE_PLUS_LANDINGPAGE_HTML,
+    );
+    emailFenster.document.open();
+    emailFenster.document.write(seite);
+    emailFenster.document.close();
+  };
 
   const toggleWeiterleitenV3Pflegegrad = () => {
     setWeiterleitenV3Tools((prev) => {
@@ -2573,8 +2615,14 @@ p { margin: 0 0 6pt 0; }
                             className="btn-blue"
                             disabled={!weiterleitenAbschickenEnabled}
                             onClick={() => {
-                              showAppToast('email');
                               setIsWeiterleitenModalOpen(false);
+                              if (istPopup4Variante1) {
+                                // Verdeutlicht, dass an den Klienten eine E-Mail versendet wird:
+                                // Öffnet die versendete E-Mail als eigene Seite (weißer Hintergrund).
+                                oeffnePflegePlusEmail();
+                              } else {
+                                showAppToast('email');
+                              }
                             }}
                           >
                             Abschicken

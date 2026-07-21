@@ -3535,6 +3535,8 @@
   flex: 1;
   border: none;
   border-radius: 0;
+  /* Leichtes Orange wie die Pflege-Zellen in Popup-Variante 3 */
+  background: #fdeccf;
 }
 
 .weiterleiten-pflege-kosten--freigegeben {
@@ -3563,11 +3565,21 @@
   margin-bottom: 2px;
 }
 
+/* Popup-Variante 4: etwas Abstand zwischen Titel und Beschreibungstext */
+.weiterleiten-pflege-kosten-titel--abstand {
+  margin-bottom: 8px;
+}
+
 .weiterleiten-pflege-kosten-text {
   margin: 0;
   font-size: 12px;
   line-height: 1.5;
   color: #4b5563;
+}
+
+/* Popup-Variante 4: Preis-Satz als eigener Absatz mit etwas Abstand darüber */
+.weiterleiten-pflege-kosten-fee {
+  margin-top: 10px;
 }
 
 /* Preis + Rabatt */
@@ -3667,6 +3679,18 @@
   display: block;
   font-size: 12px;
   margin-bottom: 10px;
+}
+
+/* Popup-Variante 4: etwas Abstand zwischen Preis-Satz und Checkbox */
+.weiterleiten-pflege-vertrag--abstand {
+  margin-top: 14px;
+}
+
+.weiterleiten-pflege-deckungsbeitrag-hinweis {
+  margin: 8px 0 0;
+  font-size: 11px;
+  line-height: 1.45;
+  color: #6b7280;
 }
 
 .anbieter-head {
