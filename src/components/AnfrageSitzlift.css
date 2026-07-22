@@ -3722,13 +3722,15 @@
 
 .weiterleiten-pflege-vertrag--abstand input {
   flex-shrink: 0;
-  margin-top: 1px;
+  margin: 1px 0 0 0;
+  width: 13px;
+  height: 13px;
 }
 
 .weiterleiten-pflege-deckungsbeitrag-hinweis {
-  margin: 10px 0 0;
-  /* bündig unter dem Zustimmungstext „Der Klient …" (hinter der Checkbox) */
-  padding-left: 22px;
+  margin: -2px 0 0;
+  /* bündig unter dem Zustimmungstext „Der Klient …": Checkbox (13px) + Gap (8px) */
+  padding-left: 21px;
   font-size: 11px;
   line-height: 1.5;
   color: #6b7280;
