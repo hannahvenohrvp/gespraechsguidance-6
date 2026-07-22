@@ -1303,19 +1303,19 @@ const AnfrageSitzlift: React.FC = () => {
                 <br />
                 Wir übernehmen die individuelle Suche und Auswahl eines passenden Anbieters für den Klienten.
               </>
+            ) : istSonderansichtV1 ? (
+              'Wir übernehmen im Rahmen einer Vermittlungsgarantie die gezielte Suche nach geeigneten Anbietern.'
             ) : (
               <>
                 Wir können die individuelle Suche und Auswahl eines passenden
-                Anbieters für den Klienten übernehmen.
-                {!istSonderansichtV1 && (
-                  <> Dafür berechnen wir eine einmalige Aufwandsentschädigung von {formatEuro(PFLEGE_BASISPREIS)} €.</>
-                )}
+                Anbieters für den Klienten übernehmen. Dafür berechnen wir eine einmalige
+                Aufwandsentschädigung von {formatEuro(PFLEGE_BASISPREIS)} €.
               </>
             )}
           </p>
           {istSonderansichtV1 && !istPopup5V1 && (
             <p className="weiterleiten-pflege-kosten-text weiterleiten-pflege-kosten-fee">
-              Dafür berechnen wir eine einmalige{' '}
+              Für diesen Service berechnen wir eine einmalige{' '}
               <strong>Aufwandsentschädigung von {formatEuro(PFLEGE_FIXPREIS_V4)} €</strong>.
             </p>
           )}
@@ -1369,15 +1369,23 @@ const AnfrageSitzlift: React.FC = () => {
             checked={pflegeVertragBestaetigt}
             onChange={(e) => setPflegeVertragBestaetigt(e.target.checked)}
           />
-          Der Klient hat der kostenpflichtigen Anbietervermittlung zu{' '}
-          {formatEuro(pflegeEndpreis)} € {!istSonderansichtV1 ? 'telefonisch ' : ''}zugestimmt
-          {!istSonderansichtV1 ? ' (mündlicher Kaufvertrag)' : ''}.
+          {istSonderansichtV1 ? (
+            <>
+              Der Klient hat der kostenpflichtigen Vermittlungsgarantie zum Preis von{' '}
+              {formatEuro(pflegeEndpreis)} € verbindlich zugestimmt.
+            </>
+          ) : (
+            <>
+              Der Klient hat der kostenpflichtigen Anbietervermittlung zu{' '}
+              {formatEuro(pflegeEndpreis)} € telefonisch zugestimmt (mündlicher Kaufvertrag).
+            </>
+          )}
         </label>
       )}
       {istSonderansichtV1 && !istPopup5V1 && (
         <p className="weiterleiten-pflege-deckungsbeitrag-hinweis">
-          <strong>Hinweis:</strong> Der Zahlungseingang erhöht den Deckungsbeitrag. Erfolgt
-          keine Zahlung durch den Klienten, reduziert sich der Deckungsbeitrag.
+          <strong>Hinweis:</strong> Die Buchungsbestätigung und Zahlungsaufforderung wird dem
+          Klienten per E-Mail zugesendet.
         </p>
       )}
     </div>

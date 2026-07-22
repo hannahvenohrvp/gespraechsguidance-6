@@ -66,9 +66,8 @@ td { border-collapse: collapse; }
 <tr>
 <td style="font-family:Arial,Helvetica,Tahoma,sans-serif; font-size:14px; line-height:19px; color:#48453b; text-align:left; padding:14px 25px 20px 25px;">
 <b>Sehr geehrte Frau Müller,</b><br/><br/>
-mein Name ist Mahmoud Halimeh. Wir haben gerade eben zum Thema Treppenlift und weiteren Möglichkeiten für ein selbstbestimmtes Leben im Alter gesprochen. Unser Service ist für Sie <b>kostenlos und unverbindlich</b>.
-<br><br>Sehen Sie sich die Anbietervorschläge in Ruhe an. Wir melden uns in <b>zwei Wochen</b> noch einmal bei Ihnen, um zu erfahren, ob alles zu Ihrer Zufriedenheit verlaufen ist und ob Sie weiteren Bedarf haben.
-<br/><br/>Im Folgenden finden Sie die Anbietervorschläge:
+mein Name ist Mahmoud Halimeh. Wir haben gerade eben zum Thema Treppenlift und weiteren Möglichkeiten für ein selbstbestimmtes Leben im Alter gesprochen.
+<br><br>Wie besprochen, gebe ich Ihnen im Folgenden einen Überblick über unsere Anbietervorschläge.
 </td>
 </tr>
 </table>
@@ -209,37 +208,6 @@ Folgende Mitglieder haben uns <b>freie Kapazitäten</b> gemeldet. Die Anbieter w
 </td>
 </tr>
 
-<!-- Angefragte Anbieter -->
-<tr>
-<td style="background-color:#ffffff;">
-<table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width:600px;">
-<tr>
-<td style="text-align:left; color:#98c44c; font-size:20px; line-height:25px; font-family:Arial,Helvetica,Tahoma,sans-serif; padding:20px 25px 5px 25px;"><b>Individuelle Anbietersuche</b></td>
-</tr>
-</table>
-</td>
-</tr>
-<tr>
-<td style="background-color:#ffffff;">
-<table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width:600px;">
-<tr>
-<td style="font-family:Arial,Helvetica,Tahoma,sans-serif; font-size:14px; line-height:19px; color:#48453b; text-align:left; padding:5px 25px 20px 25px;">
-Ihre <b>Vermittlungsgarantie</b> wurde erfolgreich gebucht. Ab sofort übernehmen wir die <b>individuelle Suche passender Anbieter</b>, um eine geeignete Lösung für Ihren Pflegebedarf zu finden. Die Buchungsbestätigung erhalten Sie in einer separaten E-Mail.
-</td>
-</tr>
-</table>
-</td>
-</tr>
-
-<!-- Trenner -->
-<tr>
-<td style="background-color:#f2f4f7;">
-<table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width:600px;">
-<tr><td style="font-size:15px; line-height:17px; padding-top:3px;">&nbsp;</td></tr>
-</table>
-</td>
-</tr>
-
 <!-- Bewertung -->
 <tr>
 <td style="background-color:#ffffff;">
@@ -283,7 +251,7 @@ Ihre <b>Vermittlungsgarantie</b> wurde erfolgreich gebucht. Ab sofort übernehme
 <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width:600px;">
 <tr>
 <td style="font-family:Arial,Helvetica,Tahoma,sans-serif; font-size:14px; line-height:19px; color:#48453b; text-align:left; padding:20px 25px 6px 25px;">
-Ich hoffe, dass ich Ihnen mit diesen kostenlosen Informationen weiterhelfen konnte.
+Ich hoffe, dass ich Ihnen mit diesen Informationen weiterhelfen konnte.
 </td>
 </tr>
 <tr>

@@ -68,9 +68,9 @@ td { border-collapse: collapse; }
 <tr>
 <td style="font-family:Arial,Helvetica,Tahoma,sans-serif; font-size:14px; line-height:19px; color:#48453b; text-align:left; padding:14px 25px 20px 25px;">
 <b>Guten Tag Anna Müller,</b><br/><br/>
-vielen Dank für Ihr Vertrauen. Wir bestätigen die telefonische Buchung Ihrer <b>Vermittlungsgarantie über Pflegehilfe Plus</b>.
+vielen Dank für Ihr Vertrauen. Wir bestätigen hiermit die Buchung Ihrer <b>Vermittlungsgarantie</b> und starten ab sofort mit der individuellen Suche nach geeigneten Anbietern.
 <br/><br/>
-Ab sofort übernehmen wir die individuelle Suche passender Anbieter, um eine geeignete Lösung für Ihren Pflegebedarf zu finden.
+Wir setzen alles daran, eine passende Lösung für Sie zu erreichen. Gleichzeitig profitieren Sie von unserer <b>Geld-zurück-Garantie</b>, sodass Sie jederzeit auf der sicheren Seite sind.
 </td>
 </tr>
 </table>
@@ -105,7 +105,7 @@ Ab sofort übernehmen wir die individuelle Suche passender Anbieter, um eine gee
 </tr>
 <tr>
 <td style="padding:6px 0; vertical-align:top; font-weight:bold;">Produkt</td>
-<td style="padding:6px 0; vertical-align:top; color:#4c8ba5; font-weight:bold;">Pflegehilfe Plus – Vermittlungsgarantie</td>
+<td style="padding:6px 0; vertical-align:top; color:#4c8ba5; font-weight:bold;">Vermittlungsgarantie (Pflegehilfe Plus)</td>
 </tr>
 <tr>
 <td style="padding:6px 0; vertical-align:top; font-weight:bold;">Buchungsdatum</td>
@@ -199,7 +199,7 @@ Verfügbare Zahlungsarten: PayPal, Überweisung, Kredit-/ Debitkarte.
 </tr>
 <tr>
 <td style="padding:6px 0; vertical-align:top; font-weight:bold;">Art der Leistung</td>
-<td style="padding:6px 0; vertical-align:top;">Pflegehilfe Plus (Vermittlungsgarantie)</td>
+<td style="padding:6px 0; vertical-align:top;">Vermittlungsgarantie</td>
 </tr>
 <tr>
 <td style="padding:6px 0; vertical-align:top; font-weight:bold;">Gesamtbetrag brutto</td>

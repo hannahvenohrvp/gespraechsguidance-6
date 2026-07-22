@@ -3727,7 +3727,8 @@
 
 .weiterleiten-pflege-deckungsbeitrag-hinweis {
   margin: 10px 0 0;
-  padding-left: 0;
+  /* bündig unter dem Zustimmungstext „Der Klient …" (hinter der Checkbox) */
+  padding-left: 22px;
   font-size: 11px;
   line-height: 1.5;
   color: #6b7280;
