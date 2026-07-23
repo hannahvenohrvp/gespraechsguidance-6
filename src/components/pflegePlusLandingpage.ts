@@ -57,6 +57,7 @@ export const PFLEGE_PLUS_LANDINGPAGE_HTML = `<!doctype html>
   .pay .brand{ font-weight:bold; font-size:16px; }
   .paypal .pp1{ color:#003087; } .paypal .pp2{ color:#009cde; }
   .sepa{ color:#1a3d7c; font-style:italic; font-weight:bold; }
+  .ueberweisung{ font-size:22px; line-height:1; }
   .cards{ display:inline-flex; gap:6px; align-items:center; }
   .cc{ width:30px; height:20px; border-radius:3px; display:inline-block; }
   .cc.mc{ background:linear-gradient(90deg,#eb001b 0 50%,#f79e1b 50% 100%); }
@@ -165,7 +166,7 @@ export const PFLEGE_PLUS_LANDINGPAGE_HTML = `<!doctype html>
   <div class="pay sel">
     <span class="radio"></span>
     <span class="name">Überweisung</span>
-    <span class="brand sepa">SEPA</span>
+    <span class="brand ueberweisung" aria-hidden="true">🏦</span>
   </div>
 
   <div class="pay">
