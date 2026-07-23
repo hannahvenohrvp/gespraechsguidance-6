@@ -1304,7 +1304,7 @@ const AnfrageSitzlift: React.FC = () => {
                 Wir übernehmen die individuelle Suche und Auswahl eines passenden Anbieters für den Klienten.
               </>
             ) : istSonderansichtV1 ? (
-              'Wir übernehmen im Rahmen einer Vermittlungsgarantie die gezielte Suche nach geeigneten Anbietern.'
+              'Im Rahmen der kostenpflichtigen Vermittlungsgarantie übernehmen wir die gezielte Suche nach geeigneten Anbietern.'
             ) : (
               <>
                 Wir können die individuelle Suche und Auswahl eines passenden
@@ -1315,8 +1315,8 @@ const AnfrageSitzlift: React.FC = () => {
           </p>
           {istSonderansichtV1 && !istPopup5V1 && (
             <p className="weiterleiten-pflege-kosten-text weiterleiten-pflege-kosten-fee">
-              Für diesen Service berechnen wir eine einmalige{' '}
-              <strong>Aufwandsentschädigung von {formatEuro(PFLEGE_FIXPREIS_V4)} €</strong>.
+              Für diesen Service wird eine einmalige{' '}
+              <strong>Aufwandsentschädigung in Höhe von {formatEuro(PFLEGE_FIXPREIS_V4)} €</strong> berechnet.
             </p>
           )}
         </div>
@@ -1384,8 +1384,8 @@ const AnfrageSitzlift: React.FC = () => {
       )}
       {istSonderansichtV1 && !istPopup5V1 && (
         <p className="weiterleiten-pflege-deckungsbeitrag-hinweis">
-          <strong>Hinweis:</strong> Die Buchungsbestätigung und Zahlungsaufforderung wird dem
-          Klienten per E-Mail zugesendet.
+          <strong>Hinweis:</strong> Die Buchungsbestätigung sowie die Zahlungsaufforderung werden dem
+          Klienten per E-Mail zugesandt.
         </p>
       )}
     </div>

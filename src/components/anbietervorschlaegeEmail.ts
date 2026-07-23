@@ -66,7 +66,7 @@ td { border-collapse: collapse; }
 <tr>
 <td style="font-family:Arial,Helvetica,Tahoma,sans-serif; font-size:14px; line-height:19px; color:#48453b; text-align:left; padding:14px 25px 20px 25px;">
 <b>Sehr geehrte Frau Müller,</b><br/><br/>
-mein Name ist Mahmoud Halimeh. Wir haben gerade eben zum Thema Treppenlift und weiteren Möglichkeiten für ein selbstbestimmtes Leben im Alter gesprochen.
+mein Name ist Hannah Venohr. Wir haben gerade eben zum Thema Treppenlift und weiteren Möglichkeiten für ein selbstbestimmtes Leben im Alter gesprochen.
 <br><br>Wie besprochen, gebe ich Ihnen im Folgenden einen Überblick über unsere Anbietervorschläge.
 </td>
 </tr>
@@ -257,7 +257,7 @@ Ich hoffe, dass ich Ihnen mit diesen Informationen weiterhelfen konnte.
 <tr>
 <td style="font-family:Arial,Helvetica,Tahoma,sans-serif; font-size:14px; line-height:19px; color:#48453b; text-align:left; padding:12px 25px 20px 25px;">
 Mit freundlichen Grüßen<br/>
-<span style="color:#98c44c; font-weight:bold;">Mahmoud Halimeh</span><br/>
+<span style="color:#98c44c; font-weight:bold;">Hannah Venohr</span><br/>
 <b>Ihre persönliche Pflegeberatung</b>
 </td>
 </tr>

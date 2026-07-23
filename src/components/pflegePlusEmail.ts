@@ -256,13 +256,13 @@ E-Mail: <a href="mailto:beratung@pflegehilfe.de" style="color:#4c8ba5;">beratung
 <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width:600px;">
 <tr>
 <td style="font-family:Arial,Helvetica,Tahoma,sans-serif; font-size:14px; line-height:19px; color:#48453b; text-align:left; padding:6px 25px 6px 25px;">
-Danke, dass Sie sich für Pflegehilfe Plus entschieden haben.
+Danke, dass Sie sich für die Vermittlungsgarantie des Verbund Pflegehilfe entschieden haben.
 </td>
 </tr>
 <tr>
 <td style="font-family:Arial,Helvetica,Tahoma,sans-serif; font-size:14px; line-height:19px; color:#48453b; text-align:left; padding:12px 25px 20px 25px;">
 Mit freundlichen Grüßen<br/>
-<span style="color:#98c44c; font-weight:bold;">Mahmoud Halimeh</span><br/>
+<span style="color:#98c44c; font-weight:bold;">Hannah Venohr</span><br/>
 <b>Ihre persönliche Pflegeberatung</b>
 </td>
 </tr>
