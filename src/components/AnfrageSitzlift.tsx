@@ -2640,20 +2640,6 @@ p { margin: 0 0 6pt 0; }
                       )}
                     </div>
 
-                    <div className="weiterleiten-bottom-grid">
-                      <div className="weiterleiten-followup-block">
-                        <div className="weiterleiten-followup-fields weiterleiten-followup-stacked">
-                          <div className="weiterleiten-followup-field">
-                            <div className="weiterleiten-followup-field-label">Nachbetreuung am</div>
-                            <input type="text" defaultValue="04.03.26" aria-label="Nachbetreuung am" />
-                          </div>
-                          <div className="weiterleiten-followup-field">
-                            <div className="weiterleiten-followup-field-label">Uhrzeit</div>
-                            <input type="text" defaultValue="16:18" aria-label="Uhrzeit" />
-                          </div>
-                        </div>
-                      </div>
-                    </div>
                     <div className="weiterleiten-footer weiterleiten-footer--stacked">
                       <div className="weiterleiten-footer-trailing">
                         {effektivePopupVersion === 1 && (
