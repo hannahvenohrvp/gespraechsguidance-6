@@ -147,9 +147,8 @@ export const PFLEGE_PLUS_LANDINGPAGE_HTML = `<!doctype html>
 <!-- Hero -->
 <div class="hero">
   <div class="hero-inner">
-    <div class="ph-logo"><span class="word">Pflegehilfe</span><span class="plus">+</span></div>
-    <h1>Wir haben uns auf die Suche nach der passenden Lösung für Sie begeben.</h1>
-    <p>Unsere Vermittlungsgarantie – Ihre Sicherheit.</p>
+    <h1>Unsere Vermittlungsgarantie<br/>– Ihre Sicherheit.</h1>
+    <p>Wir haben uns auf die Suche nach der passenden Lösung für Sie begeben.</p>
   </div>
 </div>
 
@@ -292,18 +291,22 @@ export const PFLEGE_PLUS_LANDINGPAGE_HTML = `<!doctype html>
 
 <script>
 (function(){
-  var btn = document.querySelector('.cta');
   var wrap = document.querySelector('.wrap');
-  if(!btn || !wrap){ return; }
-  btn.addEventListener('click', function(){
+  function zeigeDanke(text){
     // Design der Landingpage (Header/Hero/Footer) bleibt; nur der weiße Bereich wird ersetzt.
+    if(!wrap){ return; }
+    var titel = text || 'Vielen Dank für die fristgerechte Zahlung.';
     wrap.innerHTML =
       '<div style="text-align:center; padding:34px 0 44px;">' +
         '<div style="width:80px; height:80px; border-radius:50%; background:#8cbf3f; color:#fff; font-size:44px; line-height:80px; margin:0 auto 26px;">&#10003;</div>' +
-        '<h1 style="font-family:Arial,Helvetica,Tahoma,sans-serif; font-size:26px; line-height:1.35; color:#3d3a32; margin:0;">Vielen Dank für die fristgerechte Zahlung.</h1>' +
+        '<h1 style="font-family:Arial,Helvetica,Tahoma,sans-serif; font-size:26px; line-height:1.35; color:#3d3a32; margin:0;">' + titel + '</h1>' +
       '</div>';
     window.scrollTo(0,0);
-  });
+  }
+  // Von der Vergleichsseite aus aufrufbar (0-€-Fall: direkt zur Danke-Seite).
+  window.phZeigeDanke = zeigeDanke;
+  var btn = document.querySelector('.cta');
+  if(btn){ btn.addEventListener('click', function(){ zeigeDanke(); }); }
 })();
 </script>
 

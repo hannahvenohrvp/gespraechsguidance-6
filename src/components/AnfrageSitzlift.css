@@ -3608,6 +3608,41 @@
   margin-top: 12px;
 }
 
+/* Popup-Variante 6: geringerer Abstand zum Beschreibungstext */
+.weiterleiten-pflege-kosten-fee--eng {
+  margin-top: 4px;
+}
+
+/* Popup-Variante 6: frei eingebbarer Betrag der Aufwandsentschädigung */
+.weiterleiten-pflege-preis-eingabe {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.weiterleiten-pflege-preis-eingabe-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #374151;
+}
+
+.weiterleiten-pflege-preis-eingabe-input {
+  width: 96px;
+  padding: 5px 8px;
+  border: 1px solid #cbd2d9;
+  border-radius: 3px;
+  font-size: 13px;
+  color: #1f2937;
+  background: #fff;
+}
+
+.weiterleiten-pflege-preis-eingabe-waehrung {
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+}
+
 /* Preis + Rabatt */
 .weiterleiten-pflege-preisblock {
   display: flex;

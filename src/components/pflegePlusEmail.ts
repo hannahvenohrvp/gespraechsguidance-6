@@ -54,7 +54,7 @@ td { border-collapse: collapse; }
 <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width:600px;">
 <tr>
 <td style="font-family:Arial,Helvetica,Tahoma,sans-serif; font-size:22px; line-height:27px; color:#48453b; text-align:left; padding:5px 25px 10px 25px;">
-<b><span style="color:#98c44c;">››</span> Buchungsbestätigung und Zahlungsaufforderung</b>
+<b><span style="color:#98c44c;">››</span> Ihre Vermittlungsgarantie ist aktiv</b>
 </td>
 </tr>
 </table>
@@ -67,8 +67,9 @@ td { border-collapse: collapse; }
 <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width:600px;">
 <tr>
 <td style="font-family:Arial,Helvetica,Tahoma,sans-serif; font-size:14px; line-height:19px; color:#48453b; text-align:left; padding:14px 25px 20px 25px;">
-<b>Guten Tag Anna Müller,</b><br/><br/>
-vielen Dank für Ihr Vertrauen. Wir bestätigen hiermit die Buchung Ihrer <b>Vermittlungsgarantie</b> und starten ab sofort mit der individuellen Suche nach geeigneten Anbietern.
+<b>Guten Tag Anna Müller,</b>
+<br/><br/>
+Sie benötigen einen <b>passenden Anbieter</b> für eine Vollstationäre Pflege. Wir bestätigen hiermit die Buchung Ihrer <b>Vermittlungsgarantie</b> und starten ab sofort mit der individuellen Suche nach geeigneten Anbietern für Sie.
 <br/><br/>
 Wir setzen alles daran, eine passende Lösung für Sie zu erreichen. Gleichzeitig profitieren Sie von unserer <b>Geld-zurück-Garantie</b>, sodass Sie jederzeit auf der sicheren Seite sind.
 </td>
@@ -105,12 +106,13 @@ Wir setzen alles daran, eine passende Lösung für Sie zu erreichen. Gleichzeiti
 </tr>
 <tr>
 <td style="padding:6px 0; vertical-align:top; font-weight:bold;">Produkt</td>
-<td style="padding:6px 0; vertical-align:top; color:#4c8ba5; font-weight:bold;">Vermittlungsgarantie (Pflegehilfe Plus)</td>
+<td style="padding:6px 0; vertical-align:top; color:#4c8ba5; font-weight:bold;">Vermittlungsgarantie</td>
 </tr>
 <tr>
 <td style="padding:6px 0; vertical-align:top; font-weight:bold;">Buchungsdatum</td>
 <td style="padding:6px 0; vertical-align:top;">10.07.2026</td>
 </tr>
+<!--PH5-REMOVE-START-->
 <tr>
 <td style="padding:6px 0; vertical-align:top; font-weight:bold;">Zahlungsstatus</td>
 <td style="padding:6px 0; vertical-align:top; font-weight:bold;">Offen</td>
@@ -119,6 +121,7 @@ Wir setzen alles daran, eine passende Lösung für Sie zu erreichen. Gleichzeiti
 <td style="padding:6px 0; vertical-align:top; font-weight:bold;">Zahlungsfrist</td>
 <td style="padding:6px 0; vertical-align:top;">Bitte begleichen Sie den Betrag bis zum <b>17.07.2026</b>.</td>
 </tr>
+<!--PH5-REMOVE-END-->
 </table>
 </td></tr>
 </table>
@@ -128,6 +131,7 @@ Wir setzen alles daran, eine passende Lösung für Sie zu erreichen. Gleichzeiti
 </td>
 </tr>
 
+<!--PH5-REMOVE-START-->
 <!-- Gesamtbetrag -->
 <tr>
 <td style="background-color:#ffffff;">
@@ -230,6 +234,7 @@ Diese E-Mail dient als Buchungsbestätigung, Zahlungsaufforderung und Beleg. Bit
 </table>
 </td>
 </tr>
+<!--PH5-REMOVE-END-->
 
 <!-- Fragen? Wir sind für Sie da. -->
 <tr>
@@ -240,7 +245,7 @@ Diese E-Mail dient als Buchungsbestätigung, Zahlungsaufforderung und Beleg. Bit
 <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width:550px; background-color:#f2f4f7; border-radius:12px;">
 <tr><td style="padding:18px 20px; font-family:Arial,Helvetica,Tahoma,sans-serif; font-size:14px; line-height:22px; color:#48453b;">
 <b style="color:#48453b; font-size:18px; line-height:23px; display:inline-block; margin-bottom:6px;">Fragen? Wir sind für Sie da.</b><br/>
-E-Mail: <a href="mailto:beratung@pflegehilfe.de" style="color:#4c8ba5;">beratung@pflegehilfe.de</a><br/>
+E-Mail: <a href="mailto:service@pflegehilfe.de" style="color:#4c8ba5;">service@pflegehilfe.de</a><br/>
 <span style="font-size:13px; color:#8a887f;">Erreichbar: Mo–So von 8–20 Uhr</span>
 </td></tr>
 </table>
@@ -290,7 +295,7 @@ Mit freundlichen Grüßen<br/>
 <td style="vertical-align:middle; font-family:Arial,Helvetica,Tahoma,sans-serif; font-size:14px; line-height:20px; color:#48453b;">
 <b>06131 / 26 520 64</b><br/>
 <span style="font-size:12px; color:#8a887f;">(Mo–So von 8–20 Uhr)</span><br/>
-<a href="mailto:beratung@pflegehilfe.de" style="color:#4c8ba5;">beratung@pflegehilfe.de</a>
+<a href="mailto:service@pflegehilfe.de" style="color:#4c8ba5;">service@pflegehilfe.de</a>
 </td>
 </tr></table>
 </td>
@@ -360,6 +365,7 @@ export function buildEmailVergleichHtml(
   links: EmailVergleichPanel,
   rechts: EmailVergleichPanel,
   landingpageHtml?: string,
+  direktDanke?: boolean,
 ): string {
   // Für das srcdoc-Attribut: & und " maskieren, damit der HTML-Inhalt beim
   // Parsen des Attributs 1:1 wiederhergestellt wird (Entities wie &euro; bleiben erhalten).
@@ -367,11 +373,15 @@ export function buildEmailVergleichHtml(
     html.replace(/&/g, '&amp;').replace(/"/g, '&quot;');
 
   // Wird vom „Jetzt sicher bezahlen"-Button in der linken Mail (per parent-Aufruf)
-  // genutzt, um die Bezahl-Landingpage in einem neuen Tab zu öffnen.
+  // genutzt, um die Bezahl-Landingpage in einem neuen Tab zu öffnen. Bei 0,00 €
+  // (direktDanke) wird der Bezahlschritt übersprungen und direkt die Danke-Seite gezeigt.
+  const direktDankeAufruf = direktDanke
+    ? "if(w.phZeigeDanke){w.phZeigeDanke('Vielen Dank! Es sind keine weiteren Schritte erforderlich.');}"
+    : '';
   const landingpageSkript = landingpageHtml
     ? `<script>window.oeffnePflegehilfeLandingpage=function(){var w=window.open('','_blank');if(!w)return;w.document.open();w.document.write(${JSON.stringify(
         landingpageHtml,
-      ).replace(/<\//g, '<\\/')});w.document.close();};</script>`
+      ).replace(/<\//g, '<\\/')});w.document.close();${direktDankeAufruf}};</script>`
     : '';
 
   return `<!DOCTYPE html>

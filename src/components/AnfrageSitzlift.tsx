@@ -1076,7 +1076,9 @@ const AnfrageSitzlift: React.FC = () => {
   const [pflegeEntfernt, setPflegeEntfernt] = useState(false);
   /** Popup-Variante 4: zusätzliches Produkt „Tagespflege" (einzeln schließbar). */
   const [verhinderungKurzzeitEntfernt, setVerhinderungKurzzeitEntfernt] = useState(false);
-  const [weiterleitenPopupVersion, setWeiterleitenPopupVersion] = useState<1 | 2 | 3 | 4 | 5>(1);
+  /** Popup-Variante 6: frei wählbarer Betrag der Aufwandsentschädigung (Berater-Eingabe). */
+  const [vermittlungPreisFrei, setVermittlungPreisFrei] = useState('');
+  const [weiterleitenPopupVersion, setWeiterleitenPopupVersion] = useState<1 | 2 | 3 | 4 | 5 | 6 | 7>(1);
   // Neue Popup-Variante 3 ist (zunächst) identisch zu Variante 1. Dadurch rücken
   // die bisherigen Varianten nach hinten: die alte Variante 3 ist jetzt 4, die
   // alte Variante 4 ist jetzt 5. „effektivePopupVersion" bildet die Auswahl auf
@@ -1091,10 +1093,12 @@ const AnfrageSitzlift: React.FC = () => {
   // Popup-Logik rechnet jedoch mit `wirksamePopupVersion`. Zum Abweichen später hier bzw.
   // an den `wirksamePopupVersion === …`-Stellen verzweigen.
   const wirksamePopupVersion =
-    appVariant === 1 && (weiterleitenPopupVersion === 4 || weiterleitenPopupVersion === 5)
+    weiterleitenPopupVersion === 6 ||
+    weiterleitenPopupVersion === 7 ||
+    (appVariant === 1 && (weiterleitenPopupVersion === 4 || weiterleitenPopupVersion === 5))
       ? 3
       : weiterleitenPopupVersion;
-  // App-Variante 1: Popup-Varianten 3, 4 UND 5 zeigen dieselbe Sonderansicht.
+  // App-Variante 1: Popup-Varianten 3, 4, 5, 6 UND 7 zeigen dieselbe Sonderansicht.
   // Die Anbieter-Kacheln der Vollstationären Pflege entfallen; stattdessen steht der
   // Kostenblock („Aktuell keine Verfügbarkeiten", fester Preis 99 €, ohne Rabatt,
   // Abschicken öffnet die E-Mail-Vorschau) direkt oben in der Produktzeile.
@@ -1102,13 +1106,20 @@ const AnfrageSitzlift: React.FC = () => {
     appVariant === 1 &&
     (weiterleitenPopupVersion === 3 ||
       weiterleitenPopupVersion === 4 ||
-      weiterleitenPopupVersion === 5);
-  // Nur Popup-Variante 4 (App-Variante 1): zusätzliches Produkt „Tagespflege".
-  // (Popup-Variante 5 zeigt nur „Vollstationäre Pflege".)
-  const istTagespflegeV1 = appVariant === 1 && weiterleitenPopupVersion === 4;
+      weiterleitenPopupVersion === 5 ||
+      weiterleitenPopupVersion === 6 ||
+      weiterleitenPopupVersion === 7);
+  // Popup-Varianten 4 UND 7 (App-Variante 1): zusätzliches Produkt „Tagespflege".
+  // (4 = freier Preis + zwei Produkte, 7 = fester Preis + zwei Produkte.)
+  const istTagespflegeV1 =
+    appVariant === 1 && (weiterleitenPopupVersion === 4 || weiterleitenPopupVersion === 7);
   // Nur Popup-Variante 5 (App-Variante 1): Produkt bereits gebucht – reiner Infotext
   // (keine Aufwandsentschädigung, keine Zustimmung/Hinweis).
   const istPopup5V1 = appVariant === 1 && weiterleitenPopupVersion === 5;
+  // Popup-Varianten 3 UND 4 (App-Variante 1): Betrag der Aufwandsentschädigung wird vom
+  // Berater frei eingegeben (kein fester Preis). Variante 4 = 3 + zwei Produkte.
+  const istFreierPreisV1 =
+    appVariant === 1 && (weiterleitenPopupVersion === 3 || weiterleitenPopupVersion === 4);
   // Die kostenpflichtige Spalte gilt erst als entfernt, wenn ALLE ihre Produkte
   // geschlossen sind (Variante 4: Vollstationäre Pflege UND Tagespflege).
   const pflegeSpalteEntfernt = istTagespflegeV1
@@ -1298,11 +1309,13 @@ const AnfrageSitzlift: React.FC = () => {
           <p className="weiterleiten-pflege-kosten-text">
             {istPopup5V1 ? (
               <>
-                Der Klient hat <strong>bereits Pflegehilfe+ gebucht</strong>.
+                Der Klient hat <strong>die Vermittlungsgarantie bereits gebucht</strong>.
                 <br />
                 <br />
                 Wir übernehmen die individuelle Suche und Auswahl eines passenden Anbieters für den Klienten.
               </>
+            ) : istFreierPreisV1 ? (
+              'Im Rahmen einer Vermittlungsgarantie übernehmen wir die gezielte Suche nach geeigneten Anbietern.'
             ) : istSonderansichtV1 ? (
               'Im Rahmen der kostenpflichtigen Vermittlungsgarantie übernehmen wir die gezielte Suche nach geeigneten Anbietern.'
             ) : (
@@ -1313,12 +1326,29 @@ const AnfrageSitzlift: React.FC = () => {
               </>
             )}
           </p>
-          {istSonderansichtV1 && !istPopup5V1 && (
+          {istFreierPreisV1 ? (
+            <div className="weiterleiten-pflege-kosten-text weiterleiten-pflege-kosten-fee weiterleiten-pflege-kosten-fee--eng">
+              Für diesen Service wird eine einmalige <strong>Aufwandsentschädigung</strong> berechnet.
+              <div className="weiterleiten-pflege-preis-eingabe">
+                <span className="weiterleiten-pflege-preis-eingabe-label">Aufwandsentschädigung</span>
+                <input
+                  type="text"
+                  inputMode="decimal"
+                  className="weiterleiten-pflege-preis-eingabe-input"
+                  value={vermittlungPreisFrei}
+                  onChange={(e) => setVermittlungPreisFrei(e.target.value)}
+                  placeholder="Betrag"
+                  aria-label="Aufwandsentschädigung – Betrag in Euro"
+                />
+                <span className="weiterleiten-pflege-preis-eingabe-waehrung">€</span>
+              </div>
+            </div>
+          ) : istSonderansichtV1 && !istPopup5V1 ? (
             <p className="weiterleiten-pflege-kosten-text weiterleiten-pflege-kosten-fee">
               Für diesen Service wird eine einmalige{' '}
               <strong>Aufwandsentschädigung in Höhe von {formatEuro(PFLEGE_FIXPREIS_V4)} €</strong> berechnet.
             </p>
-          )}
+          ) : null}
         </div>
       </div>
 
@@ -1369,7 +1399,9 @@ const AnfrageSitzlift: React.FC = () => {
             checked={pflegeVertragBestaetigt}
             onChange={(e) => setPflegeVertragBestaetigt(e.target.checked)}
           />
-          {istSonderansichtV1 ? (
+          {istFreierPreisV1 ? (
+            <>Der Klient hat der Vermittlungsgarantie verbindlich zugestimmt.</>
+          ) : istSonderansichtV1 ? (
             <>
               Der Klient hat der kostenpflichtigen Vermittlungsgarantie zum Preis von{' '}
               {formatEuro(pflegeEndpreis)} € verbindlich zugestimmt.
@@ -1391,6 +1423,12 @@ const AnfrageSitzlift: React.FC = () => {
     </div>
   );
 
+  // Popup-Variante 6: ein Betrag muss eingegeben sein (0 € ist zulässig, leer nicht).
+  const vermittlungPreisRoh = vermittlungPreisFrei.replace(/€/g, '').trim();
+  const vermittlungPreisZahl = Number(vermittlungPreisRoh.replace(/\s/g, '').replace(',', '.'));
+  const vermittlungPreisGueltig =
+    vermittlungPreisRoh !== '' && Number.isFinite(vermittlungPreisZahl) && vermittlungPreisZahl >= 0;
+
   const weiterleitenAbschickenEnabled =
     (effektivePopupVersion === 1
       ? zustimmungKontaktweitergabe &&
@@ -1402,17 +1440,63 @@ const AnfrageSitzlift: React.FC = () => {
       : weiterleitenV2V3NachgespraechZustimmungErforderlich
         ? zustimmungNachgespraechBeratung
         : true) &&
-    (!pflegeVertragErforderlich || pflegeVertragBestaetigt);
+    (!pflegeVertragErforderlich || pflegeVertragBestaetigt) &&
+    (!istFreierPreisV1 || vermittlungPreisGueltig);
 
   // Popup-Variante 4: nach dem Abschicken die versendete E-Mail in einer eigenen Seite
   // (neuer Tab) öffnen – als Vergleichsansicht mit zwei Mails nebeneinander.
   const oeffnePflegePlusEmail = () => {
     const emailFenster = window.open('', '_blank');
     if (!emailFenster) return;
+    // Popup-Variante 6: den frei eingegebenen Betrag in Buchungs-Mail UND Landingpage
+    // anzeigen (ersetzt den festen Preis „99,00 €" bzw. die MwSt „15,81 €").
+    let buchungsMailHtml = PFLEGE_PLUS_EMAIL_HTML;
+    let landingpageHtml = PFLEGE_PLUS_LANDINGPAGE_HTML;
+    const preisRoh = vermittlungPreisFrei.replace(/€/g, '').trim();
+    if (istFreierPreisV1 && preisRoh !== '') {
+      const zahl = Number(preisRoh.replace(/\s/g, '').replace(',', '.'));
+      const preisAnzeige = Number.isFinite(zahl) ? `${formatEuro(zahl)} €` : `${preisRoh} €`;
+      buchungsMailHtml = PFLEGE_PLUS_EMAIL_HTML.split('99,00 €').join(preisAnzeige);
+      landingpageHtml = PFLEGE_PLUS_LANDINGPAGE_HTML.split('99,00 €').join(preisAnzeige);
+      if (Number.isFinite(zahl)) {
+        // Enthaltene 19 % USt. aus dem Bruttobetrag neu berechnen.
+        const mwstAnzeige = `${formatEuro((zahl * 0.19) / 1.19)} €`;
+        landingpageHtml = landingpageHtml.split('15,81 €').join(mwstAnzeige);
+      }
+    }
+    // Popup-Variante 4 (freier Preis + zwei Produkte): Intro-Satz um „bzw. eine Tagespflege" ergänzen.
+    if (appVariant === 1 && weiterleitenPopupVersion === 4) {
+      buchungsMailHtml = buchungsMailHtml
+        .split('Sie benötigen einen <b>passenden Anbieter</b> für eine Vollstationäre Pflege.')
+        .join(
+          'Sie benötigen einen <b>passenden Anbieter</b> für eine Vollstationäre Pflege beziehungsweise eine Tagespflege.',
+        );
+    }
+    // Popup-Variante 5 (bereits gebucht): Zahlungs-/Beleg-Blöcke entfernen und eigener Intro-Text.
+    if (istPopup5V1) {
+      buchungsMailHtml = buchungsMailHtml.replace(
+        /<!--PH5-REMOVE-START-->[\s\S]*?<!--PH5-REMOVE-END-->/g,
+        '',
+      );
+      buchungsMailHtml = buchungsMailHtml
+        .split(
+          'Sie benötigen einen <b>passenden Anbieter</b> für eine Vollstationäre Pflege. Wir bestätigen hiermit die Buchung Ihrer <b>Vermittlungsgarantie</b> und starten ab sofort mit der individuellen Suche nach geeigneten Anbietern für Sie.',
+        )
+        .join(
+          'Sie benötigen einen <b>passenden Anbieter</b> für eine Vollstationäre Pflege. Dank Ihrer bereits gebuchten <b>Vermittlungsgarantie</b> suchen wir nach geeigneten Anbietern für Sie.',
+        )
+        .split(
+          'Wir setzen alles daran, eine passende Lösung für Sie zu erreichen. Gleichzeitig profitieren Sie von unserer <b>Geld-zurück-Garantie</b>, sodass Sie jederzeit auf der sicheren Seite sind.',
+        )
+        .join('Wir melden uns bei Ihnen, sobald wir geeignete Anbieter für Sie gefunden haben.');
+    }
+    // Bei 0,00 € (freier Preis = 0) führt „Jetzt sicher bezahlen" direkt zur Danke-Seite.
+    const direktDanke = istFreierPreisV1 && vermittlungPreisGueltig && vermittlungPreisZahl === 0;
     const seite = buildEmailVergleichHtml(
-      { label: 'Buchungsbestätigung & Zahlung', html: PFLEGE_PLUS_EMAIL_HTML },
+      { label: 'Buchungsbestätigung & Zahlung', html: buchungsMailHtml },
       { label: 'Anbietervorschläge', html: ANBIETERVORSCHLAEGE_EMAIL_HTML },
-      PFLEGE_PLUS_LANDINGPAGE_HTML,
+      landingpageHtml,
+      direktDanke,
     );
     emailFenster.document.open();
     emailFenster.document.write(seite);
@@ -2228,6 +2312,20 @@ p { margin: 0 0 6pt 0; }
                             onClick={() => setWeiterleitenPopupVersion(5)}
                           >
                             5
+                          </button>
+                          <button
+                            type="button"
+                            className={weiterleitenPopupVersion === 6 ? 'is-active' : ''}
+                            onClick={() => setWeiterleitenPopupVersion(6)}
+                          >
+                            6
+                          </button>
+                          <button
+                            type="button"
+                            className={weiterleitenPopupVersion === 7 ? 'is-active' : ''}
+                            onClick={() => setWeiterleitenPopupVersion(7)}
+                          >
+                            7
                           </button>
                         </div>
                       </div>
