@@ -1515,15 +1515,6 @@ const AnfrageSitzlift: React.FC = () => {
     });
   };
 
-  // „Kein akuter Bedarf: E-Mail-Strecke“ ist angehakt, solange Kontakt-Präferenzen
-  // nicht gewählt ist. Klick darauf wählt Kontakt-Präferenzen ab (= E-Mail-Strecke an).
-  const selectWeiterleitenV3EmailStrecke = () => {
-    setWeiterleitenV3Tools((prev) => ({
-      ...prev,
-      kontaktPraeferenzenChecked: false,
-    }));
-  };
-
   const toggleWeiterleitenV3KontaktPraeferenzen = () => {
     setWeiterleitenV3Tools((prev) => {
       const next = !prev.kontaktPraeferenzenChecked;
@@ -2602,7 +2593,7 @@ p { margin: 0 0 6pt 0; }
                           )}
                           {weiterleitenV2EmailStreckeSichtbar && (
                             <div className="weiterleiten-column-title weiterleiten-column-title--tools weiterleiten-column-title--sonstiges">
-                              <span className="weiterleiten-tools-heading">Sonstiges</span>
+                              <span className="weiterleiten-tools-heading">Anfrage schließen</span>
                               <p className="weiterleiten-tools-subhint">Dem Klienten wird eine E-Mail zugesendet.</p>
                             </div>
                           )}
@@ -2613,29 +2604,38 @@ p { margin: 0 0 6pt 0; }
                                 <button
                                   type="button"
                                   className={`anbieter-check${weiterleitenV3Tools.kontaktPraeferenzenChecked ? ' anbieter-check--unchecked' : ''}`}
-                                  onClick={selectWeiterleitenV3EmailStrecke}
+                                  onClick={toggleWeiterleitenV3KontaktPraeferenzen}
                                   aria-pressed={!weiterleitenV3Tools.kontaktPraeferenzenChecked}
-                                  aria-label="Kein akuter Bedarf auswählen"
+                                  aria-label="Kein akuter Bedarf"
                                 >
                                   {weiterleitenV3Tools.kontaktPraeferenzenChecked ? '' : '✓'}
                                 </button>
                               </div>
                             </div>
                           )}
-                          {weiterleitenV2EmailStreckeSichtbar && (
+                          {weiterleitenV2EmailStreckeSichtbar && weiterleitenV3Tools.kontaktPraeferenzenChecked && (
+                            <div className="weiterleiten-column-title weiterleiten-column-title--tools weiterleiten-column-title--kontaktaufnahme">
+                              <span className="weiterleiten-tools-heading">Kontaktaufnahme</span>
+                              <p className="weiterleiten-tools-subhint">Dem Klienten wird eine E-Mail zugesendet.</p>
+                            </div>
+                          )}
+                          {weiterleitenV2EmailStreckeSichtbar && weiterleitenV3Tools.kontaktPraeferenzenChecked && (
                             <div className="weiterleiten-anbieter-card selected weiterleiten-tool-card weiterleiten-v3-kontakt-praeferenzen-kachel">
                               <div className="anbieter-head">
-                                <span className="anbieter-name">Kontakt-Einstellungen</span>
+                                <span className="anbieter-name">Kontakt-Einstellungen ändern</span>
                                 <button
                                   type="button"
-                                  className={`anbieter-check${weiterleitenV3Tools.kontaktPraeferenzenChecked ? '' : ' anbieter-check--unchecked'}`}
+                                  className="anbieter-check"
                                   onClick={toggleWeiterleitenV3KontaktPraeferenzen}
                                   aria-pressed={weiterleitenV3Tools.kontaktPraeferenzenChecked}
-                                  aria-label="Kontakt-Einstellungen in die E-Mail-Auswahl aufnehmen"
+                                  aria-label="Kontakt-Einstellungen ändern abwählen"
                                 >
-                                  {weiterleitenV3Tools.kontaktPraeferenzenChecked ? '✓' : ''}
+                                  ✓
                                 </button>
                               </div>
+                              <p className="weiterleiten-kontakt-hinweis">
+                                Hinweis: Über die E-Mail kann der Klient seine Kontakt-Einstellungen anpassen.
+                              </p>
                             </div>
                           )}
                         </>

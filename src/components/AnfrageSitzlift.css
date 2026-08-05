@@ -3335,8 +3335,14 @@
 .weiterleiten-grid {
   display: grid;
   grid-template-columns: 190px repeat(4, 1fr);
-  border: 1px solid #b0b6bd;
   margin-bottom: 12px;
+}
+
+/* Overlap-Trick: benachbarte Kachel-Ränder überlappen sich zu exakt 1px */
+.weiterleiten-grid > .weiterleiten-column-title,
+.weiterleiten-grid > .weiterleiten-anbieter-card,
+.weiterleiten-grid > .weiterleiten-pflege-kosten-slot {
+  margin: 0 -1px -1px 0;
 }
 
 /* Zeile 2 (Tools): Trennlinie zur Anbieter-Zeile (nur wenn Sitzlift-Zeile vorhanden) */
@@ -3357,13 +3363,27 @@
   grid-column: 2;
 }
 
+/* „Kontakt-Einstellungen“ erscheint erst nach Abwählen von „Kein akuter Bedarf“
+   – in einer neuen Zeile unterhalb (Spalte 2). */
 .weiterleiten-grid--ohne-sitzlift-zeile > .weiterleiten-v3-kontakt-praeferenzen-kachel {
-  grid-column: 3;
+  grid-column: 2;
 }
 
-/* „Sonstiges“ als Titel der zweiten Zeile (unter „Informationsbroschüre“, Spalte 1) */
+/* „Anfrage schließen“ als Titel der zweiten Zeile (unter „Informationsbroschüre“, Spalte 1) */
 .weiterleiten-column-title--sonstiges {
   grid-column: 1;
+}
+
+/* „Kontaktaufnahme“ als Titel der neuen Zeile (links neben „Kontakt-Einstellungen“, Spalte 1) */
+.weiterleiten-column-title--kontaktaufnahme {
+  grid-column: 1;
+}
+
+.weiterleiten-kontakt-hinweis {
+  margin: 6px 0 0;
+  font-size: 11px;
+  line-height: 1.4;
+  color: #6b7280;
 }
 
 /* Trennlinie zwischen den Zeilen (über den Kacheln der zweiten Zeile) */
@@ -3380,7 +3400,7 @@
 
 .weiterleiten-column-title {
   background: #fafafa;
-  border-right: 1px solid #b0b6bd;
+  border: 1px solid #b0b6bd;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -3418,19 +3438,11 @@
 }
 
 .weiterleiten-anbieter-card {
-  border-right: 1px solid #b0b6bd;
+  border: 1px solid #b0b6bd;
   padding: 8px 10px;
   min-height: 72px;
   box-sizing: border-box;
   background: #f0f6fa;
-}
-
-/* Letzte Spalte je Zeile: kein rechter Innenstrich (rechts nur noch freier Raum im Raster).
-   nth-child(5) nur im V1-Raster (mit Sitzlift-Zeile) – im einzeiligen V2/V3-Flexlayout
-   würde es sonst die Trennlinie nach „Zuschüsse & Vorsorge“ entfernen. */
-.weiterleiten-grid:not(.weiterleiten-grid--ohne-sitzlift-zeile) > .weiterleiten-anbieter-card:nth-child(5),
-.weiterleiten-grid > .weiterleiten-anbieter-card:last-child {
-  border-right: none;
 }
 
 .weiterleiten-anbieter-card.selected {
@@ -3553,6 +3565,7 @@
 .weiterleiten-pflege-kosten-slot {
   grid-column: 2 / -1;
   display: flex;
+  border: 1px solid #b0b6bd;
 }
 
 .weiterleiten-pflege-kosten-slot .weiterleiten-pflege-kosten {
