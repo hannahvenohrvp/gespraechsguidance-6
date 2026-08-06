@@ -2615,27 +2615,24 @@ p { margin: 0 0 6pt 0; }
                           )}
                           {weiterleitenV2EmailStreckeSichtbar && weiterleitenV3Tools.kontaktPraeferenzenChecked && (
                             <div className="weiterleiten-column-title weiterleiten-column-title--tools weiterleiten-column-title--kontaktaufnahme">
-                              <span className="weiterleiten-tools-heading">Kontaktaufnahme</span>
+                              <span className="weiterleiten-tools-heading">Kontakt-Einstellungen</span>
                               <p className="weiterleiten-tools-subhint">Dem Klienten wird eine E-Mail zugesendet.</p>
                             </div>
                           )}
                           {weiterleitenV2EmailStreckeSichtbar && weiterleitenV3Tools.kontaktPraeferenzenChecked && (
                             <div className="weiterleiten-anbieter-card selected weiterleiten-tool-card weiterleiten-v3-kontakt-praeferenzen-kachel">
                               <div className="anbieter-head">
-                                <span className="anbieter-name">Kontakt-Einstellungen ändern</span>
+                                <span className="anbieter-name">Beratung dauerhaft beenden</span>
                                 <button
                                   type="button"
                                   className="anbieter-check"
                                   onClick={toggleWeiterleitenV3KontaktPraeferenzen}
                                   aria-pressed={weiterleitenV3Tools.kontaktPraeferenzenChecked}
-                                  aria-label="Kontakt-Einstellungen ändern abwählen"
+                                  aria-label="Beratung dauerhaft beenden abwählen"
                                 >
                                   ✓
                                 </button>
                               </div>
-                              <p className="weiterleiten-kontakt-hinweis">
-                                Hinweis: Über die E-Mail kann der Klient seine Kontakt-Einstellungen anpassen.
-                              </p>
                             </div>
                           )}
                         </>
