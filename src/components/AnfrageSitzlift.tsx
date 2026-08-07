@@ -2622,13 +2622,13 @@ p { margin: 0 0 6pt 0; }
                           {weiterleitenV2EmailStreckeSichtbar && weiterleitenV3Tools.kontaktPraeferenzenChecked && (
                             <div className="weiterleiten-anbieter-card selected weiterleiten-tool-card weiterleiten-v3-kontakt-praeferenzen-kachel">
                               <div className="anbieter-head">
-                                <span className="anbieter-name">Beratung dauerhaft beenden</span>
+                                <span className="anbieter-name">Persönliche Beratung einstellen</span>
                                 <button
                                   type="button"
                                   className="anbieter-check"
                                   onClick={toggleWeiterleitenV3KontaktPraeferenzen}
                                   aria-pressed={weiterleitenV3Tools.kontaktPraeferenzenChecked}
-                                  aria-label="Beratung dauerhaft beenden abwählen"
+                                  aria-label="Persönliche Beratung einstellen abwählen"
                                 >
                                   ✓
                                 </button>
