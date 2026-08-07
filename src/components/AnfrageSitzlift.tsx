@@ -1464,12 +1464,26 @@ const AnfrageSitzlift: React.FC = () => {
         landingpageHtml = landingpageHtml.split('15,81 €').join(mwstAnzeige);
       }
     }
-    // Popup-Variante 4 (freier Preis + zwei Produkte): Intro-Satz um „bzw. eine Tagespflege" ergänzen.
-    if (appVariant === 1 && weiterleitenPopupVersion === 4) {
+    // Bei 0,00 € (freier Preis = 0): eigene Textfassung; „Jetzt sicher bezahlen" führt direkt zur Danke-Seite.
+    const direktDanke = istFreierPreisV1 && vermittlungPreisGueltig && vermittlungPreisZahl === 0;
+    // Popup-Variante 4 (freier Preis + zwei Produkte) bei Betrag > 0 €: eigener Intro-Satz mit „bzw. eine Tagespflege".
+    if (appVariant === 1 && weiterleitenPopupVersion === 4 && !direktDanke) {
       buchungsMailHtml = buchungsMailHtml
-        .split('Sie benötigen einen <b>passenden Anbieter</b> für eine Vollstationäre Pflege.')
+        .split(
+          'Sie benötigen einen <b>passenden Anbieter</b> für eine Vollstationäre Pflege. Wir bestätigen hiermit die Buchung Ihrer <b>Vermittlungsgarantie</b> und starten ab sofort mit der individuellen Suche nach geeigneten Anbietern für Sie.',
+        )
         .join(
-          'Sie benötigen einen <b>passenden Anbieter</b> für eine Vollstationäre Pflege beziehungsweise eine Tagespflege.',
+          'vielen Dank für Ihr Vertrauen. Sie müssen die Suche nach einem <b>passenden Anbieter</b> für eine Vollstationäre Pflege bzw. eine Tagespflege nicht allein bewältigen. Wir bestätigen hiermit die Buchung Ihrer <b>Vermittlungsgarantie</b> und starten ab sofort mit der individuellen Suche nach geeigneten Anbietern für Sie.',
+        );
+    }
+    // Popup-Variante 3 (freier Preis, ein Produkt) bei Betrag > 0 €: eigener Intro-Satz.
+    if (appVariant === 1 && weiterleitenPopupVersion === 3 && !direktDanke) {
+      buchungsMailHtml = buchungsMailHtml
+        .split(
+          'Sie benötigen einen <b>passenden Anbieter</b> für eine Vollstationäre Pflege. Wir bestätigen hiermit die Buchung Ihrer <b>Vermittlungsgarantie</b> und starten ab sofort mit der individuellen Suche nach geeigneten Anbietern für Sie.',
+        )
+        .join(
+          'vielen Dank für Ihr Vertrauen. Sie müssen die Suche nach einem <b>passenden Anbieter</b> für eine Vollstationäre Pflege nicht allein bewältigen. Wir bestätigen hiermit die Buchung Ihrer <b>Vermittlungsgarantie</b> und starten ab sofort mit der individuellen Suche nach geeigneten Anbietern für Sie.',
         );
     }
     // Popup-Variante 5 (bereits gebucht): Zahlungs-/Beleg-Blöcke entfernen und eigener Intro-Text.
@@ -1483,15 +1497,37 @@ const AnfrageSitzlift: React.FC = () => {
           'Sie benötigen einen <b>passenden Anbieter</b> für eine Vollstationäre Pflege. Wir bestätigen hiermit die Buchung Ihrer <b>Vermittlungsgarantie</b> und starten ab sofort mit der individuellen Suche nach geeigneten Anbietern für Sie.',
         )
         .join(
-          'Sie benötigen einen <b>passenden Anbieter</b> für eine Vollstationäre Pflege. Dank Ihrer bereits gebuchten <b>Vermittlungsgarantie</b> suchen wir nach geeigneten Anbietern für Sie.',
+          'Sie sind auf der Suche nach einem <b>passenden Anbieter</b> für eine Vollstationäre Pflege. Dank Ihrer bereits gebuchten <b>Vermittlungsgarantie</b> suchen wir nach geeigneten Anbietern für Sie.',
         )
         .split(
           'Wir setzen alles daran, eine passende Lösung für Sie zu erreichen. Gleichzeitig profitieren Sie von unserer <b>Geld-zurück-Garantie</b>, sodass Sie jederzeit auf der sicheren Seite sind.',
         )
         .join('Wir melden uns bei Ihnen, sobald wir geeignete Anbieter für Sie gefunden haben.');
     }
-    // Bei 0,00 € (freier Preis = 0) führt „Jetzt sicher bezahlen" direkt zur Danke-Seite.
-    const direktDanke = istFreierPreisV1 && vermittlungPreisGueltig && vermittlungPreisZahl === 0;
+    // 0-€-Fall: Zahlungs-/Betragsblöcke entfernen und Intro-Absatz anpassen.
+    if (direktDanke) {
+      buchungsMailHtml = buchungsMailHtml.replace(
+        /<!--PH0-REMOVE-START-->[\s\S]*?<!--PH0-REMOVE-END-->/g,
+        '',
+      );
+      // Popup-Variante 4 (zwei Produkte): „bzw. Tagespflege" ergänzen. Absatz nach „bewältigen.".
+      const produktText =
+        weiterleitenPopupVersion === 4
+          ? 'eine Vollstationäre Pflege bzw. ein Tagespflege'
+          : 'eine Vollstationäre Pflege';
+      buchungsMailHtml = buchungsMailHtml
+        .split(
+          'Sie benötigen einen <b>passenden Anbieter</b> für eine Vollstationäre Pflege. Wir bestätigen hiermit die Buchung Ihrer <b>Vermittlungsgarantie</b> und starten ab sofort mit der individuellen Suche nach geeigneten Anbietern für Sie.',
+        )
+        .join(
+          `Sie müssen die Suche nach einem <b>passenden Anbieter</b> für ${produktText} nicht allein bewältigen.<br/><br/>Im Rahmen unserer <b>Vermittlungsgarantie</b> übernehmen wir ab sofort die individuelle Suche nach geeigneten Anbietern für Sie.`,
+        );
+      buchungsMailHtml = buchungsMailHtml
+        .split(
+          '<br/><br/>\nWir setzen alles daran, eine passende Lösung für Sie zu erreichen. Gleichzeitig profitieren Sie von unserer <b>Geld-zurück-Garantie</b>, sodass Sie jederzeit auf der sicheren Seite sind.',
+        )
+        .join('');
+    }
     const seite = buildEmailVergleichHtml(
       { label: 'Buchungsbestätigung & Zahlung', html: buchungsMailHtml },
       { label: 'Anbietervorschläge', html: ANBIETERVORSCHLAEGE_EMAIL_HTML },

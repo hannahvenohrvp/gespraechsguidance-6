@@ -112,7 +112,7 @@ Wir setzen alles daran, eine passende Lösung für Sie zu erreichen. Gleichzeiti
 <td style="padding:6px 0; vertical-align:top; font-weight:bold;">Buchungsdatum</td>
 <td style="padding:6px 0; vertical-align:top;">10.07.2026</td>
 </tr>
-<!--PH5-REMOVE-START-->
+<!--PH5-REMOVE-START--><!--PH0-REMOVE-START-->
 <tr>
 <td style="padding:6px 0; vertical-align:top; font-weight:bold;">Zahlungsstatus</td>
 <td style="padding:6px 0; vertical-align:top; font-weight:bold;">Offen</td>
@@ -121,7 +121,7 @@ Wir setzen alles daran, eine passende Lösung für Sie zu erreichen. Gleichzeiti
 <td style="padding:6px 0; vertical-align:top; font-weight:bold;">Zahlungsfrist</td>
 <td style="padding:6px 0; vertical-align:top;">Bitte begleichen Sie den Betrag bis zum <b>17.07.2026</b>.</td>
 </tr>
-<!--PH5-REMOVE-END-->
+<!--PH0-REMOVE-END--><!--PH5-REMOVE-END-->
 </table>
 </td></tr>
 </table>
@@ -131,7 +131,7 @@ Wir setzen alles daran, eine passende Lösung für Sie zu erreichen. Gleichzeiti
 </td>
 </tr>
 
-<!--PH5-REMOVE-START-->
+<!--PH5-REMOVE-START--><!--PH0-REMOVE-START-->
 <!-- Gesamtbetrag -->
 <tr>
 <td style="background-color:#ffffff;">
@@ -174,6 +174,7 @@ Verfügbare Zahlungsarten: PayPal, Überweisung, Kredit-/ Debitkarte.
 </table>
 </td>
 </tr>
+<!--PH0-REMOVE-END-->
 
 <!-- Buchungsbeleg -->
 <tr>
@@ -222,6 +223,7 @@ Verfügbare Zahlungsarten: PayPal, Überweisung, Kredit-/ Debitkarte.
 </td>
 </tr>
 
+<!--PH0-REMOVE-START-->
 <!-- Beleg-Hinweis -->
 <tr>
 <td style="background-color:#ffffff;">
@@ -234,7 +236,7 @@ Diese E-Mail dient als Buchungsbestätigung, Zahlungsaufforderung und Beleg. Bit
 </table>
 </td>
 </tr>
-<!--PH5-REMOVE-END-->
+<!--PH0-REMOVE-END--><!--PH5-REMOVE-END-->
 
 <!-- Fragen? Wir sind für Sie da. -->
 <tr>
