@@ -946,10 +946,10 @@ const DEFAULT_PHONE_NUMBERS = [
 ];
 
 // Popup-Variante 3 – kostenpflichtige Anbietervermittlung:
-// Regulärer Preis (Aufwandsentschädigung) und maximaler Rabatt, den der Berater
+// Regulärer Preis (Servicepauschale) und maximaler Rabatt, den der Berater
 // am Telefon einräumen darf. (Platzhalter-Werte – bei Bedarf anpassbar.)
 const PFLEGE_BASISPREIS = 100;
-/** Popup-Variante 4: fester Preis der Aufwandsentschädigung, ohne Rabatt. */
+/** Popup-Variante 4: fester Preis der Servicepauschale, ohne Rabatt. */
 const PFLEGE_FIXPREIS_V4 = 99;
 const PFLEGE_MAX_RABATT = 50;
 const PFLEGE_RABATT_STUFEN = [0, 10, 20, 30, 40, 50];
@@ -1076,7 +1076,7 @@ const AnfrageSitzlift: React.FC = () => {
   const [pflegeEntfernt, setPflegeEntfernt] = useState(false);
   /** Popup-Variante 4: zusätzliches Produkt „Tagespflege" (einzeln schließbar). */
   const [verhinderungKurzzeitEntfernt, setVerhinderungKurzzeitEntfernt] = useState(false);
-  /** Popup-Variante 6: frei wählbarer Betrag der Aufwandsentschädigung (Berater-Eingabe). */
+  /** Popup-Variante 6: frei wählbarer Betrag der Servicepauschale (Berater-Eingabe). */
   const [vermittlungPreisFrei, setVermittlungPreisFrei] = useState('');
   const [weiterleitenPopupVersion, setWeiterleitenPopupVersion] = useState<1 | 2 | 3 | 4 | 5 | 6 | 7>(1);
   // Neue Popup-Variante 3 ist (zunächst) identisch zu Variante 1. Dadurch rücken
@@ -1114,9 +1114,9 @@ const AnfrageSitzlift: React.FC = () => {
   const istTagespflegeV1 =
     appVariant === 1 && (weiterleitenPopupVersion === 4 || weiterleitenPopupVersion === 7);
   // Nur Popup-Variante 5 (App-Variante 1): Produkt bereits gebucht – reiner Infotext
-  // (keine Aufwandsentschädigung, keine Zustimmung/Hinweis).
+  // (keine Servicepauschale, keine Zustimmung/Hinweis).
   const istPopup5V1 = appVariant === 1 && weiterleitenPopupVersion === 5;
-  // Popup-Varianten 3 UND 4 (App-Variante 1): Betrag der Aufwandsentschädigung wird vom
+  // Popup-Varianten 3 UND 4 (App-Variante 1): Betrag der Servicepauschale wird vom
   // Berater frei eingegeben (kein fester Preis). Variante 4 = 3 + zwei Produkte.
   const istFreierPreisV1 =
     appVariant === 1 && (weiterleitenPopupVersion === 3 || weiterleitenPopupVersion === 4);
@@ -1322,15 +1322,15 @@ const AnfrageSitzlift: React.FC = () => {
               <>
                 Wir können die individuelle Suche und Auswahl eines passenden
                 Anbieters für den Klienten übernehmen. Dafür berechnen wir eine einmalige
-                Aufwandsentschädigung von {formatEuro(PFLEGE_BASISPREIS)} €.
+                Servicepauschale von {formatEuro(PFLEGE_BASISPREIS)} €.
               </>
             )}
           </p>
           {istFreierPreisV1 ? (
             <div className="weiterleiten-pflege-kosten-text weiterleiten-pflege-kosten-fee weiterleiten-pflege-kosten-fee--eng">
-              Für diesen Service wird eine einmalige <strong>Aufwandsentschädigung</strong> berechnet.
+              Für diesen Service wird eine einmalige <strong>Servicepauschale</strong> berechnet.
               <div className="weiterleiten-pflege-preis-eingabe">
-                <span className="weiterleiten-pflege-preis-eingabe-label">Aufwandsentschädigung</span>
+                <span className="weiterleiten-pflege-preis-eingabe-label">Servicepauschale</span>
                 <input
                   type="text"
                   inputMode="decimal"
@@ -1338,7 +1338,7 @@ const AnfrageSitzlift: React.FC = () => {
                   value={vermittlungPreisFrei}
                   onChange={(e) => setVermittlungPreisFrei(e.target.value)}
                   placeholder="Betrag"
-                  aria-label="Aufwandsentschädigung – Betrag in Euro"
+                  aria-label="Servicepauschale – Betrag in Euro"
                 />
                 <span className="weiterleiten-pflege-preis-eingabe-waehrung">€</span>
               </div>
@@ -1346,7 +1346,7 @@ const AnfrageSitzlift: React.FC = () => {
           ) : istSonderansichtV1 && !istPopup5V1 ? (
             <p className="weiterleiten-pflege-kosten-text weiterleiten-pflege-kosten-fee">
               Für diesen Service wird eine einmalige{' '}
-              <strong>Aufwandsentschädigung in Höhe von {formatEuro(PFLEGE_FIXPREIS_V4)} €</strong> berechnet.
+              <strong>Servicepauschale in Höhe von {formatEuro(PFLEGE_FIXPREIS_V4)} €</strong> berechnet.
             </p>
           ) : null}
         </div>
@@ -1357,7 +1357,7 @@ const AnfrageSitzlift: React.FC = () => {
       {!istSonderansichtV1 && (
         <div className="weiterleiten-pflege-preisblock">
           <div className="weiterleiten-pflege-preiszeile">
-            <span className="weiterleiten-pflege-preis-label">Aufwandsentschädigung</span>
+            <span className="weiterleiten-pflege-preis-label">Servicepauschale</span>
             {pflegeRabattClamped > 0 && (
               <span className="weiterleiten-pflege-preis-alt">{formatEuro(PFLEGE_BASISPREIS)} €</span>
             )}
