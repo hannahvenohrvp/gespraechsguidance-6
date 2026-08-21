@@ -118,8 +118,8 @@ Wir setzen alles daran, eine passende Lösung für Sie zu erreichen. Gleichzeiti
 <td style="padding:6px 0; vertical-align:top; font-weight:bold;">Offen</td>
 </tr>
 <tr>
-<td style="padding:6px 0; vertical-align:top; font-weight:bold;">Zahlungsfrist</td>
-<td style="padding:6px 0; vertical-align:top;">Bitte begleichen Sie den Betrag bis zum <b>17.07.2026</b>.</td>
+<td style="padding:6px 0; vertical-align:top; font-weight:bold;">Zahlungsziel</td>
+<td style="padding:6px 0; vertical-align:top;">Sofort fällig</td>
 </tr>
 <!--PH0-REMOVE-END--><!--PH5-REMOVE-END-->
 </table>
