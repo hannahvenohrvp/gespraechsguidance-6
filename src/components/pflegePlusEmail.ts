@@ -54,7 +54,7 @@ td { border-collapse: collapse; }
 <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width:600px;">
 <tr>
 <td style="font-family:Arial,Helvetica,Tahoma,sans-serif; font-size:22px; line-height:27px; color:#48453b; text-align:left; padding:5px 25px 10px 25px;">
-<b><span style="color:#98c44c;">››</span> Ihre Vermittlungsgarantie ist aktiv</b>
+<b><span style="color:#98c44c;">››</span> Ihre Aktiv-Suche läuft</b>
 </td>
 </tr>
 </table>
@@ -69,7 +69,7 @@ td { border-collapse: collapse; }
 <td style="font-family:Arial,Helvetica,Tahoma,sans-serif; font-size:14px; line-height:19px; color:#48453b; text-align:left; padding:14px 25px 20px 25px;">
 <b>Guten Tag Anna Müller,</b>
 <br/><br/>
-Sie benötigen einen <b>passenden Anbieter</b> für eine Vollstationäre Pflege. Wir bestätigen hiermit die Buchung Ihrer <b>Vermittlungsgarantie</b> und starten ab sofort mit der individuellen Suche nach geeigneten Anbietern für Sie.
+Sie benötigen einen <b>passenden Anbieter</b> für eine Vollstationäre Pflege. Wir bestätigen hiermit die Buchung der <b>Aktiv-Suche</b> und starten ab sofort mit der individuellen Suche nach geeigneten Anbietern für Sie.
 <br/><br/>
 Wir setzen alles daran, eine passende Lösung für Sie zu erreichen. Gleichzeitig profitieren Sie von unserer <b>Geld-zurück-Garantie</b>, sodass Sie jederzeit auf der sicheren Seite sind.
 </td>
@@ -106,7 +106,7 @@ Wir setzen alles daran, eine passende Lösung für Sie zu erreichen. Gleichzeiti
 </tr>
 <tr>
 <td style="padding:6px 0; vertical-align:top; font-weight:bold;">Produkt</td>
-<td style="padding:6px 0; vertical-align:top; color:#4c8ba5; font-weight:bold;">Vermittlungsgarantie</td>
+<td style="padding:6px 0; vertical-align:top; color:#4c8ba5; font-weight:bold;">Aktiv-Suche</td>
 </tr>
 <tr>
 <td style="padding:6px 0; vertical-align:top; font-weight:bold;">Buchungsdatum</td>
@@ -204,7 +204,7 @@ Verfügbare Zahlungsarten: PayPal, Überweisung, Kredit-/ Debitkarte.
 </tr>
 <tr>
 <td style="padding:6px 0; vertical-align:top; font-weight:bold;">Art der Leistung</td>
-<td style="padding:6px 0; vertical-align:top;">Vermittlungsgarantie</td>
+<td style="padding:6px 0; vertical-align:top;">Aktiv-Suche</td>
 </tr>
 <tr>
 <td style="padding:6px 0; vertical-align:top; font-weight:bold;">Gesamtbetrag brutto</td>
@@ -263,7 +263,7 @@ E-Mail: <a href="mailto:service@pflegehilfe.de" style="color:#4c8ba5;">service@p
 <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width:600px;">
 <tr>
 <td style="font-family:Arial,Helvetica,Tahoma,sans-serif; font-size:14px; line-height:19px; color:#48453b; text-align:left; padding:6px 25px 6px 25px;">
-Danke, dass Sie sich für die Vermittlungsgarantie des Verbund Pflegehilfe entschieden haben.
+Danke, dass Sie sich für die Aktiv-Suche des Verbund Pflegehilfe entschieden haben.
 </td>
 </tr>
 <tr>

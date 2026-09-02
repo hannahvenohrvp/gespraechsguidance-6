@@ -1309,15 +1309,15 @@ const AnfrageSitzlift: React.FC = () => {
           <p className="weiterleiten-pflege-kosten-text">
             {istPopup5V1 ? (
               <>
-                Der Klient hat <strong>die Vermittlungsgarantie bereits gebucht</strong>.
+                Der Klient hat die <strong>Aktiv-Suche bereits gebucht</strong>.
                 <br />
                 <br />
                 Wir übernehmen die individuelle Suche und Auswahl eines passenden Anbieters für den Klienten.
               </>
             ) : istFreierPreisV1 ? (
-              'Im Rahmen einer Vermittlungsgarantie übernehmen wir die gezielte Suche nach geeigneten Anbietern.'
+              'Im Rahmen unserer Aktiv-Suche übernehmen wir die gezielte Suche nach geeigneten Anbietern.'
             ) : istSonderansichtV1 ? (
-              'Im Rahmen der kostenpflichtigen Vermittlungsgarantie übernehmen wir die gezielte Suche nach geeigneten Anbietern.'
+              'Im Rahmen der kostenpflichtigen Aktiv-Suche übernehmen wir die gezielte Suche nach geeigneten Anbietern.'
             ) : (
               <>
                 Wir können die individuelle Suche und Auswahl eines passenden
@@ -1400,10 +1400,10 @@ const AnfrageSitzlift: React.FC = () => {
             onChange={(e) => setPflegeVertragBestaetigt(e.target.checked)}
           />
           {istFreierPreisV1 ? (
-            <>Der Klient hat der Vermittlungsgarantie verbindlich zugestimmt.</>
+            <>Der Klient hat der Aktiv-Suche verbindlich zugestimmt.</>
           ) : istSonderansichtV1 ? (
             <>
-              Der Klient hat der kostenpflichtigen Vermittlungsgarantie zum Preis von{' '}
+              Der Klient hat der kostenpflichtigen Aktiv-Suche zum Preis von{' '}
               {formatEuro(pflegeEndpreis)} € verbindlich zugestimmt.
             </>
           ) : (
@@ -1470,20 +1470,20 @@ const AnfrageSitzlift: React.FC = () => {
     if (appVariant === 1 && weiterleitenPopupVersion === 4 && !direktDanke) {
       buchungsMailHtml = buchungsMailHtml
         .split(
-          'Sie benötigen einen <b>passenden Anbieter</b> für eine Vollstationäre Pflege. Wir bestätigen hiermit die Buchung Ihrer <b>Vermittlungsgarantie</b> und starten ab sofort mit der individuellen Suche nach geeigneten Anbietern für Sie.',
+          'Sie benötigen einen <b>passenden Anbieter</b> für eine Vollstationäre Pflege. Wir bestätigen hiermit die Buchung der <b>Aktiv-Suche</b> und starten ab sofort mit der individuellen Suche nach geeigneten Anbietern für Sie.',
         )
         .join(
-          'vielen Dank für Ihr Vertrauen. Sie müssen die Suche nach einem <b>passenden Anbieter</b> für eine Vollstationäre Pflege bzw. eine Tagespflege nicht allein bewältigen. Wir bestätigen hiermit die Buchung Ihrer <b>Vermittlungsgarantie</b> und starten ab sofort mit der individuellen Suche nach geeigneten Anbietern für Sie.',
+          'vielen Dank für Ihr Vertrauen. Sie müssen die Suche nach einem <b>passenden Anbieter</b> für eine Vollstationäre Pflege bzw. eine Tagespflege nicht allein bewältigen. Wir bestätigen hiermit die Buchung der <b>Aktiv-Suche</b> und starten ab sofort mit der individuellen Suche nach geeigneten Anbietern für Sie.',
         );
     }
     // Popup-Variante 3 (freier Preis, ein Produkt) bei Betrag > 0 €: eigener Intro-Satz.
     if (appVariant === 1 && weiterleitenPopupVersion === 3 && !direktDanke) {
       buchungsMailHtml = buchungsMailHtml
         .split(
-          'Sie benötigen einen <b>passenden Anbieter</b> für eine Vollstationäre Pflege. Wir bestätigen hiermit die Buchung Ihrer <b>Vermittlungsgarantie</b> und starten ab sofort mit der individuellen Suche nach geeigneten Anbietern für Sie.',
+          'Sie benötigen einen <b>passenden Anbieter</b> für eine Vollstationäre Pflege. Wir bestätigen hiermit die Buchung der <b>Aktiv-Suche</b> und starten ab sofort mit der individuellen Suche nach geeigneten Anbietern für Sie.',
         )
         .join(
-          'vielen Dank für Ihr Vertrauen. Sie müssen die Suche nach einem <b>passenden Anbieter</b> für eine Vollstationäre Pflege nicht allein bewältigen. Wir bestätigen hiermit die Buchung Ihrer <b>Vermittlungsgarantie</b> und starten ab sofort mit der individuellen Suche nach geeigneten Anbietern für Sie.',
+          'vielen Dank für Ihr Vertrauen. Sie müssen die Suche nach einem <b>passenden Anbieter</b> für eine Vollstationäre Pflege nicht allein bewältigen. Wir bestätigen hiermit die Buchung der <b>Aktiv-Suche</b> und starten ab sofort mit der individuellen Suche nach geeigneten Anbietern für Sie.',
         );
     }
     // Popup-Variante 5 (bereits gebucht): Zahlungs-/Beleg-Blöcke entfernen und eigener Intro-Text.
@@ -1494,10 +1494,10 @@ const AnfrageSitzlift: React.FC = () => {
       );
       buchungsMailHtml = buchungsMailHtml
         .split(
-          'Sie benötigen einen <b>passenden Anbieter</b> für eine Vollstationäre Pflege. Wir bestätigen hiermit die Buchung Ihrer <b>Vermittlungsgarantie</b> und starten ab sofort mit der individuellen Suche nach geeigneten Anbietern für Sie.',
+          'Sie benötigen einen <b>passenden Anbieter</b> für eine Vollstationäre Pflege. Wir bestätigen hiermit die Buchung der <b>Aktiv-Suche</b> und starten ab sofort mit der individuellen Suche nach geeigneten Anbietern für Sie.',
         )
         .join(
-          'Sie sind auf der Suche nach einem <b>passenden Anbieter</b> für eine Vollstationäre Pflege. Dank Ihrer bereits gebuchten <b>Vermittlungsgarantie</b> suchen wir nach geeigneten Anbietern für Sie.',
+          'Sie sind auf der Suche nach einem <b>passenden Anbieter</b> für eine Vollstationäre Pflege. Dank Ihrer bereits gebuchten <b>Aktiv-Suche</b> suchen wir nach geeigneten Anbietern für Sie.',
         )
         .split(
           'Wir setzen alles daran, eine passende Lösung für Sie zu erreichen. Gleichzeitig profitieren Sie von unserer <b>Geld-zurück-Garantie</b>, sodass Sie jederzeit auf der sicheren Seite sind.',
@@ -1517,10 +1517,10 @@ const AnfrageSitzlift: React.FC = () => {
           : 'eine Vollstationäre Pflege';
       buchungsMailHtml = buchungsMailHtml
         .split(
-          'Sie benötigen einen <b>passenden Anbieter</b> für eine Vollstationäre Pflege. Wir bestätigen hiermit die Buchung Ihrer <b>Vermittlungsgarantie</b> und starten ab sofort mit der individuellen Suche nach geeigneten Anbietern für Sie.',
+          'Sie benötigen einen <b>passenden Anbieter</b> für eine Vollstationäre Pflege. Wir bestätigen hiermit die Buchung der <b>Aktiv-Suche</b> und starten ab sofort mit der individuellen Suche nach geeigneten Anbietern für Sie.',
         )
         .join(
-          `Sie müssen die Suche nach einem <b>passenden Anbieter</b> für ${produktText} nicht allein bewältigen.<br/><br/>Im Rahmen unserer <b>Vermittlungsgarantie</b> übernehmen wir ab sofort die individuelle Suche nach geeigneten Anbietern für Sie.`,
+          `Sie müssen die Suche nach einem <b>passenden Anbieter</b> für ${produktText} nicht allein bewältigen.<br/><br/>Im Rahmen unserer <b>Aktiv-Suche</b> übernehmen wir ab sofort die individuelle Suche nach geeigneten Anbietern für Sie.`,
         );
       buchungsMailHtml = buchungsMailHtml
         .split(

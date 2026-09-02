@@ -147,14 +147,14 @@ export const PFLEGE_PLUS_LANDINGPAGE_HTML = `<!doctype html>
 <!-- Hero -->
 <div class="hero">
   <div class="hero-inner">
-    <h1>Unsere Vermittlungsgarantie<br/>– Ihre Sicherheit.</h1>
+    <h1>Unsere Aktiv-Suche<br/>– Ihre Sicherheit.</h1>
     <p>Wir haben uns auf die Suche nach der passenden Lösung für Sie begeben.</p>
   </div>
 </div>
 
 <!-- Bezahlung -->
 <div class="wrap">
-  <h2 class="section">Gebuchte Vermittlungsgarantie sicher und bequem bezahlen:</h2>
+  <h2 class="section">Gebuchte Aktiv-Suche sicher und bequem bezahlen:</h2>
 
   <div class="pay paypal">
     <span class="radio"></span>
