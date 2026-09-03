@@ -362,13 +362,19 @@ export interface EmailVergleichPanel {
  * Baut eine eigenständige HTML-Seite, die zwei E-Mails nebeneinander in je einem
  * <iframe> (srcdoc) zeigt – dunkler Header/Chrome, unter 900px untereinander.
  * Layout angelehnt an die „Alt vs. Neu"-Vergleichsseite.
+ * Wird `rechts` als `null` übergeben, zeigt die Seite nur die linke Mail.
  */
 export function buildEmailVergleichHtml(
   links: EmailVergleichPanel,
-  rechts: EmailVergleichPanel,
+  rechts: EmailVergleichPanel | null,
   landingpageHtml?: string,
   direktDanke?: boolean,
 ): string {
+  // Wird nur das kostenpflichtige Produkt abgeschickt (das kostenfreie wurde im
+  // Popup geschlossen), gibt es keine „Anbietervorschläge"-Mail: dann zeigt die
+  // Vorschau ausschließlich die Buchungs-/Zahlungs-Mail (einspaltig, zentriert).
+  const nurEineMail = !rechts;
+  const seitenTitel = nurEineMail ? 'E-Mail-Vorschau' : 'E-Mail-Vorschau: Vergleich';
   // Für das srcdoc-Attribut: & und " maskieren, damit der HTML-Inhalt beim
   // Parsen des Attributs 1:1 wiederhergestellt wird (Entities wie &euro; bleiben erhalten).
   const escapeSrcdoc = (html: string) =>
@@ -391,12 +397,13 @@ export function buildEmailVergleichHtml(
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>E-Mail-Vorschau: Vergleich</title>
+  <title>${seitenTitel}</title>
   <style>
     * { box-sizing: border-box; }
     body { margin: 0; font-family: Arial, Helvetica, sans-serif; background: #2b2f36; color: #fff; }
     header { padding: 12px 16px; background: #1e2228; border-bottom: 1px solid #3d4450; font-size: 14px; }
     .compare { display: flex; gap: 12px; padding: 12px; height: calc(100vh - 49px); }
+    .compare--single { max-width: 760px; margin: 0 auto; }
     .panel { flex: 1; min-width: 0; display: flex; flex-direction: column; }
     .label { text-align: center; font-weight: bold; font-size: 13px; letter-spacing: 0.04em; text-transform: uppercase; padding: 8px; border-radius: 6px 6px 0 0; }
     .label-a { background: #6b7280; }
@@ -406,16 +413,20 @@ export function buildEmailVergleichHtml(
   </style>
 </head>
 <body>
-  <header>E-Mail-Vorschau: Vergleich</header>
-  <div class="compare">
+  <header>${seitenTitel}</header>
+  <div class="compare${nurEineMail ? ' compare--single' : ''}">
     <div class="panel">
       <div class="label label-a">${links.label}</div>
       <iframe srcdoc="${escapeSrcdoc(links.html)}" title="${links.label}"></iframe>
     </div>
-    <div class="panel">
+    ${
+      rechts
+        ? `<div class="panel">
       <div class="label label-b">${rechts.label}</div>
       <iframe srcdoc="${escapeSrcdoc(rechts.html)}" title="${rechts.label}"></iframe>
-    </div>
+    </div>`
+        : ''
+    }
   </div>
   ${landingpageSkript}
 </body>

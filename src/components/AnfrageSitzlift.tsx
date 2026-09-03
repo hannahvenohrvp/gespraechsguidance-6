@@ -1125,6 +1125,12 @@ const AnfrageSitzlift: React.FC = () => {
   const pflegeSpalteEntfernt = istTagespflegeV1
     ? pflegeEntfernt && verhinderungKurzzeitEntfernt
     : pflegeEntfernt;
+  // Wurde das kostenfreie Produkt (Sitzlift) im Popup geschlossen und ist das
+  // kostenpflichtige Produkt noch vorhanden, geht nur die kostenpflichtige Anfrage
+  // raus. Dann existiert keine „Anbietervorschläge"-Mail und die E-Mail-Vorschau
+  // zeigt ausschließlich die „Buchungsbestätigung & Zahlung".
+  const nurKostenpflichtigAbgeschickt =
+    wirksamePopupVersion === 3 && sitzliftEntfernt && !pflegeSpalteEntfernt;
   const produkteWeggeklickt =
     wirksamePopupVersion === 1
       ? sitzliftEntfernt
@@ -1530,7 +1536,9 @@ const AnfrageSitzlift: React.FC = () => {
     }
     const seite = buildEmailVergleichHtml(
       { label: 'Buchungsbestätigung & Zahlung', html: buchungsMailHtml },
-      { label: 'Anbietervorschläge', html: ANBIETERVORSCHLAEGE_EMAIL_HTML },
+      nurKostenpflichtigAbgeschickt
+        ? null
+        : { label: 'Anbietervorschläge', html: ANBIETERVORSCHLAEGE_EMAIL_HTML },
       landingpageHtml,
       direktDanke,
     );
