@@ -1100,7 +1100,7 @@ const AnfrageSitzlift: React.FC = () => {
       : weiterleitenPopupVersion;
   // App-Variante 1: Popup-Varianten 3, 4, 5, 6 UND 7 zeigen dieselbe Sonderansicht.
   // Die Anbieter-Kacheln der Vollstationären Pflege entfallen; stattdessen steht der
-  // Kostenblock („Aktuell keine Verfügbarkeiten", fester Preis 99 €, ohne Rabatt,
+  // Kostenblock („Aktiv-Suche starten", fester Preis 99 €, ohne Rabatt,
   // Abschicken öffnet die E-Mail-Vorschau) direkt oben in der Produktzeile.
   const istSonderansichtV1 =
     appVariant === 1 &&
@@ -1310,7 +1310,7 @@ const AnfrageSitzlift: React.FC = () => {
               istSonderansichtV1 ? ' weiterleiten-pflege-kosten-titel--abstand' : ''
             }`}
           >
-            {istSonderansichtV1 ? 'Aktuell keine Verfügbarkeiten' : 'Kostenpflichtige Anbietervermittlung'}
+            {istSonderansichtV1 ? 'Aktiv-Suche starten' : 'Kostenpflichtige Anbietervermittlung'}
           </div>
           <p className="weiterleiten-pflege-kosten-text">
             {istPopup5V1 ? (
