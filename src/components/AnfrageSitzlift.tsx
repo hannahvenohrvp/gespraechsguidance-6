@@ -1310,7 +1310,11 @@ const AnfrageSitzlift: React.FC = () => {
               istSonderansichtV1 ? ' weiterleiten-pflege-kosten-titel--abstand' : ''
             }`}
           >
-            {istSonderansichtV1 ? 'Aktiv-Suche starten' : 'Kostenpflichtige Anbietervermittlung'}
+            {istPopup5V1
+              ? 'Aktiv-Suche gestartet'
+              : istSonderansichtV1
+                ? 'Aktiv-Suche starten'
+                : 'Kostenpflichtige Anbietervermittlung'}
           </div>
           <p className="weiterleiten-pflege-kosten-text">
             {istPopup5V1 ? (
